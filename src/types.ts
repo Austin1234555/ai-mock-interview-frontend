@@ -133,6 +133,7 @@ export interface EvaluationReport {
 export type AppScreen = 
   | 'landing'
   | 'login'
+  | 'signup'
   | 'dashboard' 
   | 'setup' 
   | 'loading-orb' 

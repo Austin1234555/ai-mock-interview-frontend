@@ -5,9 +5,9 @@ import {
   Mail, 
   Lock, 
   ArrowRight, 
+  ArrowLeft,
   CheckCircle2, 
-  AlertCircle, 
-  ShieldCheck, 
+  AlertCircle,
   Cpu, 
   Terminal, 
   Eye, 
@@ -24,10 +24,12 @@ import { mockUser } from '../../data/mockData';
 
 interface LoginViewProps {
   onLoginSuccess: (user: User) => void;
+  initialIsSignUp?: boolean;
+  onNavigateBack?: () => void;
 }
 
-export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
-  const [isSignUp, setIsSignUp] = useState(false);
+export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, initialIsSignUp = false, onNavigateBack }) => {
+  const [isSignUp, setIsSignUp] = useState(initialIsSignUp);
   
   // Common states
   const [email, setEmail] = useState('');
@@ -283,87 +285,8 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
         className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 rounded-[32px] bg-[#111827]/70 border border-white/[0.1] shadow-2xl backdrop-blur-2xl overflow-hidden relative z-20"
       >
-        {/* Left Column: AI Illustration & Branding (Hidden on small screens) */}
-        <div className="hidden lg:col-span-6 p-12 bg-gradient-to-br from-blue-900/40 via-[#111827]/80 to-purple-900/40 border-r border-white/[0.08] relative overflow-hidden flex flex-col justify-between">
-          {/* Decorative grid pattern */}
-          <div className="absolute inset-0 bg-grid-pattern opacity-30 pointer-events-none" />
-
-          {/* Top branding */}
-          <div className="relative z-10 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/30 border border-white/20">
-              <Sparkles className="w-5 h-5 text-white animate-pulse" />
-            </div>
-            <div>
-              <span className="text-lg font-black tracking-tight text-white block">AI Interview</span>
-              <span className="text-[10px] font-extrabold uppercase tracking-widest text-blue-400">FAANG-Grade Rubric</span>
-            </div>
-          </div>
-
-          {/* Center Visualizer Illustration */}
-          <div className="relative z-10 my-12 flex flex-col items-center justify-center text-center">
-            <div className="relative w-64 h-64 flex items-center justify-center mb-8">
-              {/* Outer rotating rings */}
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 25, repeat: Infinity, ease: 'linear' }}
-                className="absolute inset-0 rounded-full border border-dashed border-blue-500/30"
-              />
-              <motion.div
-                animate={{ rotate: -360 }}
-                transition={{ duration: 35, repeat: Infinity, ease: 'linear' }}
-                className="absolute inset-4 rounded-full border border-purple-500/20"
-              />
-
-              {/* Glowing core sphere */}
-              <div className="w-36 h-36 rounded-full bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 shadow-2xl shadow-blue-500/50 flex items-center justify-center relative group">
-                <Cpu className="w-16 h-16 text-white drop-shadow-md transform group-hover:scale-110 transition-transform duration-500" />
-                <div className="absolute inset-0 rounded-full bg-white/20 blur-md opacity-0 group-hover:opacity-100 transition-opacity" />
-              </div>
-
-              {/* Floating feature badges */}
-              <motion.div
-                animate={{ y: [-6, 6, -6] }}
-                transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-                className="absolute -top-2 left-0 px-3 py-1.5 rounded-xl bg-black/60 border border-blue-500/30 backdrop-blur-md flex items-center gap-2 shadow-lg"
-              >
-                <Terminal className="w-3.5 h-3.5 text-blue-400" />
-                <span className="text-xs font-bold text-gray-200">Real-time Eval</span>
-              </motion.div>
-
-              <motion.div
-                animate={{ y: [6, -6, 6] }}
-                transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
-                className="absolute -bottom-2 right-0 px-3 py-1.5 rounded-xl bg-black/60 border border-green-500/30 backdrop-blur-md flex items-center gap-2 shadow-lg"
-              >
-                <ShieldCheck className="w-3.5 h-3.5 text-green-400" />
-                <span className="text-xs font-bold text-gray-200">60 FPS Waveform</span>
-              </motion.div>
-            </div>
-
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight leading-tight">
-              Master Technical & Behavioral Interviews
-            </h2>
-            <p className="text-sm text-gray-300 mt-3 max-w-sm font-normal leading-relaxed">
-              &quot;Practice real interviews with AI and get instant feedback.&quot; Experience realistic voice architecture, live coding grading, and actionable FAANG scorecards.
-            </p>
-          </div>
-
-          {/* Bottom social proof */}
-          <div className="relative z-10 pt-6 border-t border-white/[0.08] flex items-center justify-between text-xs text-gray-400">
-            <div className="flex items-center gap-2">
-              <div className="flex -space-x-2">
-                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" alt="User" className="w-6 h-6 rounded-full border border-gray-900" />
-                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80" alt="User" className="w-6 h-6 rounded-full border border-gray-900" />
-                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80" alt="User" className="w-6 h-6 rounded-full border border-gray-900" />
-              </div>
-              <span className="font-semibold text-gray-300">50,000+ engineers practice here</span>
-            </div>
-            <span className="text-blue-400 font-bold">L5/L6 Ready</span>
-          </div>
-        </div>
-
         {/* Right Column: Interactive Login Form / OTP */}
-        <div className="lg:col-span-6 p-8 sm:p-12 flex flex-col justify-center relative z-10 overflow-y-auto max-h-[90vh] custom-scrollbar">
+        <div className="lg:col-span-6 p-8 pt-4 sm:p-12 sm:pt-6 flex flex-col relative z-10 overflow-y-auto max-h-[90vh] custom-scrollbar">
           <AnimatePresence mode="wait">
             {!isOtpMode ? (
               <motion.div
@@ -373,6 +296,23 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
                 exit={{ opacity: 0, x: -20 }}
                 className="max-w-md mx-auto w-full space-y-8"
               >
+          
+          {onNavigateBack && (
+            <motion.button
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, ease: 'easeOut' }}
+              onClick={() => {
+                sound.playClick();
+                onNavigateBack();
+              }}
+              aria-label="Go back to Landing Page"
+              className="mb-8 w-fit flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] text-sm font-semibold text-gray-300 hover:text-white transition-all shadow-sm backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Back</span>
+            </motion.button>
+          )}
                 {/* Mobile Header Logo */}
                 <div className="flex lg:hidden items-center gap-3 mb-4">
                   <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg">
@@ -388,7 +328,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
                   </h1>
                   <p className="text-sm text-gray-400 mt-1.5">
                     {isSignUp 
-                      ? 'Start practicing real interviews with AI and get instant feedback.'
+                      ? 'Start practicing real interviews with AI and receive personalized feedback to improve your skills.'
                       : 'Practice real interviews with AI and get instant feedback.'}
                   </p>
                 </div>
@@ -680,6 +620,23 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
                 exit={{ opacity: 0, x: -20 }}
                 className="max-w-md mx-auto w-full space-y-8"
               >
+          
+          {onNavigateBack && (
+            <motion.button
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, ease: 'easeOut' }}
+              onClick={() => {
+                sound.playClick();
+                onNavigateBack();
+              }}
+              aria-label="Go back to Landing Page"
+              className="mb-8 w-fit flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] text-sm font-semibold text-gray-300 hover:text-white transition-all shadow-sm backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Back</span>
+            </motion.button>
+          )}
                 {/* Mobile Header Logo */}
                 <div className="flex lg:hidden items-center gap-3 mb-4">
                   <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg">
@@ -786,7 +743,120 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
             )}
           </AnimatePresence>
         </div>
-      </motion.div>
+     
+        {/* Left Column: AI Illustration & Branding (Hidden on small screens) */}
+        <div className="hidden lg:col-span-6 p-12 bg-gradient-to-br from-blue-900/40 via-[#111827]/80 to-purple-900/40 border-l border-white/[0.08] relative overflow-hidden flex flex-col justify-between">
+          {/* Decorative grid pattern */}
+          <div className="absolute inset-0 bg-grid-pattern opacity-30 pointer-events-none" />
+
+          {/* Top branding */}
+          <div className="relative z-10 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/30 border border-white/20">
+              <Sparkles className="w-5 h-5 text-white animate-pulse" />
+            </div>
+            <div>
+              <span className="text-lg font-black tracking-tight text-white block">AI Interview</span>
+              <span className="text-[10px] font-extrabold uppercase tracking-widest text-blue-400">FAANG-Grade Rubric</span>
+            </div>
+          </div>
+
+          {/* Enhanced Center Visualizer for Product Showcase */}
+          <div className="relative z-10 my-8 flex flex-col items-center justify-center text-center w-full">
+            {/* Dashboard Preview / Floating Elements */}
+            <div className="relative w-full max-w-md h-72 flex items-center justify-center mb-6">
+              {/* Background Glow */}
+              <div className="absolute inset-0 bg-gradient-to-tr from-blue-600/20 via-purple-600/20 to-transparent blur-2xl rounded-full" />
+              
+              {/* Main Analytics Card (Mock) */}
+              <motion.div 
+                initial={{ y: 0 }}
+                animate={{ y: [-5, 5, -5] }}
+                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute z-20 w-64 p-4 rounded-2xl bg-black/40 border border-white/10 backdrop-blur-xl shadow-2xl"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center">
+                      <Cpu className="w-4 h-4 text-blue-400" />
+                    </div>
+                    <div className="text-left">
+                      <div className="text-xs text-gray-400">FAANG Score</div>
+                      <div className="text-sm font-bold text-white">Strong Hire</div>
+                    </div>
+                  </div>
+                  <div className="text-green-400 text-xs font-bold bg-green-400/10 px-2 py-1 rounded-md">+15%</div>
+                </div>
+                {/* Mini chart lines */}
+                <div className="flex items-end gap-1.5 h-12 mt-2">
+                  {[40, 70, 45, 90, 65, 100].map((h, i) => (
+                    <div key={i} className="flex-1 bg-gradient-to-t from-blue-600 to-purple-500 rounded-t-sm" style={{ height: `${h}%` }} />
+                  ))}
+                </div>
+              </motion.div>
+
+              {/* Floating Feedback Card 1 */}
+              <motion.div 
+                initial={{ y: 0 }}
+                animate={{ y: [5, -5, 5] }}
+                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                className="absolute -right-4 top-4 z-30 w-48 p-3 rounded-xl bg-[#111827]/80 border border-white/10 backdrop-blur-xl shadow-xl flex items-center gap-3"
+              >
+                <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center shrink-0">
+                  <CheckCircle2 className="w-4 h-4 text-green-400" />
+                </div>
+                <div className="text-left">
+                  <div className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Communication</div>
+                  <div className="text-xs font-semibold text-white">Clear & Concise</div>
+                </div>
+              </motion.div>
+
+              {/* Floating Feedback Card 2 */}
+              <motion.div 
+                initial={{ y: 0 }}
+                animate={{ y: [-5, 5, -5] }}
+                transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+                className="absolute -left-8 bottom-8 z-30 w-52 p-3 rounded-xl bg-[#111827]/80 border border-white/10 backdrop-blur-xl shadow-xl flex items-start gap-3"
+              >
+                <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center shrink-0">
+                  <Terminal className="w-4 h-4 text-purple-400" />
+                </div>
+                <div className="text-left">
+                  <div className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Code Quality</div>
+                  <div className="text-xs font-semibold text-white leading-tight">Optimal Time Complexity</div>
+                </div>
+              </motion.div>
+
+              {/* Floating Orbs & Particles */}
+              <motion.div animate={{ rotate: 360 }} transition={{ duration: 20, repeat: Infinity, ease: 'linear' }} className="absolute inset-0">
+                <div className="absolute top-10 left-10 w-2 h-2 rounded-full bg-blue-400 blur-[1px]" />
+                <div className="absolute bottom-20 right-10 w-3 h-3 rounded-full bg-purple-400 blur-[2px]" />
+                <div className="absolute top-1/2 right-4 w-1.5 h-1.5 rounded-full bg-cyan-400" />
+              </motion.div>
+            </div>
+
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight leading-tight mt-4">
+              Master Technical & Behavioral Interviews
+            </h2>
+            <p className="text-sm text-gray-300 mt-3 max-w-sm font-normal leading-relaxed">
+              Experience realistic voice architecture, live coding grading, and actionable FAANG scorecards.
+            </p>
+          </div>
+          
+          {/* Bottom social proof */}
+          <div className="relative z-10 pt-6 border-t border-white/[0.08] flex items-center justify-between text-xs text-gray-400">
+            <div className="flex items-center gap-2">
+              <div className="flex -space-x-2">
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" alt="User" className="w-6 h-6 rounded-full border border-gray-900" />
+                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80" alt="User" className="w-6 h-6 rounded-full border border-gray-900" />
+                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80" alt="User" className="w-6 h-6 rounded-full border border-gray-900" />
+              </div>
+              <span className="font-semibold text-gray-300">50,000+ engineers practice here</span>
+            </div>
+            <span className="text-blue-400 font-bold">L5/L6 Ready</span>
+          </div>
+        </div>
+
+         </motion.div>
     </div>
   );
 };

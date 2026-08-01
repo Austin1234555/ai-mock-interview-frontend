@@ -102,20 +102,28 @@ export const App: React.FC = () => {
   };
 
   // If not authenticated, render LandingView by default, or LoginView if explicitly requested
-  if (!user || currentScreen === 'landing' || currentScreen === 'login') {
-    if (currentScreen === 'login') {
+  if (!user || currentScreen === 'landing' || currentScreen === 'login' || currentScreen === 'signup') {
+    if (currentScreen === 'login' || currentScreen === 'signup') {
       return (
         <div className="min-h-screen text-gray-100 relative font-sans selection:bg-blue-500/30 selection:text-blue-200">
           <BackgroundGlow />
-          <LoginView onLoginSuccess={handleLoginSuccess} />
+          <LoginView 
+            key={currentScreen} 
+            onLoginSuccess={handleLoginSuccess} 
+            initialIsSignUp={currentScreen === 'signup'} 
+            onNavigateBack={() => {
+              setCurrentScreen('landing');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+          />
         </div>
       );
     }
     return (
       <div className="min-h-screen text-gray-100 relative font-sans selection:bg-blue-500/30 selection:text-blue-200">
         <BackgroundGlow />
-        <LandingView onNavigateAuth={() => {
-          setCurrentScreen(user ? 'dashboard' : 'login');
+        <LandingView onNavigateAuth={(isSignUp) => {
+          setCurrentScreen(user ? 'dashboard' : (isSignUp ? 'signup' : 'login'));
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }} />
       </div>
