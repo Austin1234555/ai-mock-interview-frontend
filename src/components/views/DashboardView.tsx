@@ -419,16 +419,29 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         </span>
                       </td>
                       <td className="py-4 px-6 text-right">
-                        <button
-                          onClick={() => {
-                            sound.playClick();
-                            onNavigate('report', session.role);
-                          }}
-                          className="px-3 py-1.5 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] text-xs font-bold text-gray-200 border border-white/[0.08] transition-colors inline-flex items-center gap-1"
-                        >
-                          <span>Review</span>
-                          <ArrowUpRight className="w-3.5 h-3.5" />
-                        </button>
+                        {session.status === 'Completed' ? (
+                          <button
+                            onClick={() => {
+                              sound.playClick();
+                              onNavigate('report', session.role);
+                            }}
+                            className="px-3 py-1.5 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] text-xs font-bold text-gray-200 border border-white/[0.08] transition-colors inline-flex items-center gap-1"
+                          >
+                            <span>Review</span>
+                            <ArrowUpRight className="w-3.5 h-3.5" />
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => {
+                              sound.playClick();
+                              onNavigate('session', session.role);
+                            }}
+                            className="px-3 py-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-xs font-bold text-blue-400 border border-blue-500/20 transition-colors inline-flex items-center gap-1 shadow-sm"
+                          >
+                            <Play className="w-3 h-3 fill-current" />
+                            <span>Resume</span>
+                          </button>
+                        )}
                       </td>
                     </motion.tr>
                   ))

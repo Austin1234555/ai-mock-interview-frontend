@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Editor } from '@monaco-editor/react';
 import { 
   Sparkles, 
   Send, 
@@ -15,6 +16,8 @@ import {
   ArrowRight,
   Award,
   BookOpen,
+  Code2,
+  AlignLeft,
   ChevronDown,
   ChevronUp
 } from 'lucide-react';
@@ -38,6 +41,8 @@ export const InterviewSessionView: React.FC<InterviewSessionViewProps> = ({
   const [currentQIndex, setCurrentQIndex] = useState(0);
   const [answerText, setAnswerText] = useState('');
   const [isRecording, setIsRecording] = useState(false);
+  const [inputMode, setInputMode] = useState<'text' | 'code'>('text');
+  const [codeLanguage, setCodeLanguage] = useState('javascript');
   const [timeLeft, setTimeLeft] = useState(questions[0]?.timeLimitSeconds || 180);
   
   // States: 'answering' | 'evaluating' | 'feedback'
@@ -68,7 +73,8 @@ export const InterviewSessionView: React.FC<InterviewSessionViewProps> = ({
     setSessionState('answering');
     setCurrentFeedback(null);
     setShowModelAnswer(false);
-  }, [currentQIndex]);
+    setInputMode(currentQ?.isCodingQuestion ? 'code' : 'text');
+  }, [currentQIndex, currentQ]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -159,15 +165,16 @@ export const InterviewSessionView: React.FC<InterviewSessionViewProps> = ({
 
           <button
             onClick={() => {
-              if (window.confirm("Are you sure you want to exit? Progress for this session will be discarded.")) {
+              if (window.confirm("Are you sure you want to cancel the session? Progress will be discarded.")) {
                 sound.playClick();
                 onCancelSession();
               }
             }}
-            className="p-2.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] text-gray-400 hover:text-white transition-colors"
-            title="Exit Session"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 font-bold border border-red-500/20 hover:border-red-500/40 transition-all shadow-sm focus:outline-none"
+            title="Cancel Session"
           >
             <RotateCcw className="w-4 h-4" />
+            <span className="hidden sm:inline">Cancel Session</span>
           </button>
         </div>
       </div>
@@ -226,49 +233,118 @@ export const InterviewSessionView: React.FC<InterviewSessionViewProps> = ({
           >
             {/* Answer Input Area */}
             <div className="p-6 sm:p-8 rounded-[28px] bg-[#111827]/70 border border-white/[0.08] shadow-2xl backdrop-blur-xl space-y-4">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-bold uppercase tracking-wider text-gray-300 flex items-center gap-2">
-                  <span>Your Technical Answer</span>
-                  {isRecording && (
-                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 text-[10px] font-bold animate-pulse">
-                      <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
-                      Listening to microphone...
-                    </span>
-                  )}
-                </label>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex flex-wrap items-center gap-4">
+                  <label className="text-xs font-bold uppercase tracking-wider text-gray-300 flex items-center gap-2">
+                    <span>Your Answer</span>
+                    {isRecording && (
+                      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 text-[10px] font-bold animate-pulse">
+                        <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                        Listening to microphone...
+                      </span>
+                    )}
+                  </label>
+                  
+                  {/* Toggle Switch */}
+                  <div className="flex items-center p-1 rounded-lg bg-black/40 border border-white/10">
+                    <button
+                      type="button"
+                      onClick={() => { sound.playClick(); setInputMode('text'); }}
+                      className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-bold transition-all ${
+                        inputMode === 'text' 
+                          ? 'bg-blue-500 text-white shadow-md' 
+                          : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'
+                      }`}
+                    >
+                      <AlignLeft className="w-3.5 h-3.5" />
+                      Text / Voice
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { sound.playClick(); setInputMode('code'); }}
+                      className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-bold transition-all ${
+                        inputMode === 'code' 
+                          ? 'bg-blue-500 text-white shadow-md' 
+                          : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'
+                      } ${currentQ?.isCodingQuestion && inputMode !== 'code' ? 'animate-pulse ring-1 ring-blue-500/50' : ''}`}
+                    >
+                      <Code2 className="w-3.5 h-3.5" />
+                      Code Compiler
+                    </button>
+                  </div>
+                </div>
                 
-                <button
-                  type="button"
-                  onClick={handleSimulateAnswer}
-                  className="text-xs font-bold text-blue-400 hover:text-blue-300 underline underline-offset-4 transition-colors"
-                >
-                  ⚡ Simulate High-Scoring Answer
-                </button>
+                <div className="flex items-center gap-3">
+                  {inputMode === 'code' && (
+                    <select
+                      value={codeLanguage}
+                      onChange={(e) => { sound.playClick(); setCodeLanguage(e.target.value); }}
+                      className="bg-black/40 border border-white/10 text-gray-300 text-xs font-bold rounded-lg px-2 sm:px-3 py-1.5 outline-none focus:border-blue-500 cursor-pointer"
+                    >
+                      <option value="javascript">JavaScript</option>
+                      <option value="python">Python</option>
+                      <option value="java">Java</option>
+                      <option value="cpp">C++</option>
+                      <option value="go">Go</option>
+                      <option value="rust">Rust</option>
+                    </select>
+                  )}
+                  <button
+                    type="button"
+                    onClick={handleSimulateAnswer}
+                    className="text-xs font-bold text-blue-400 hover:text-blue-300 underline underline-offset-4 transition-colors hidden sm:block"
+                  >
+                    ⚡ Simulate High-Scoring Answer
+                  </button>
+                </div>
               </div>
 
-              <div className="relative">
-                <textarea
-                  value={answerText}
-                  onChange={(e) => setAnswerText(e.target.value)}
-                  placeholder="Type your response or use the microphone button below to record your voice answer in real-time..."
-                  rows={7}
-                  className="w-full p-4 sm:p-5 rounded-2xl bg-black/50 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm font-normal leading-relaxed custom-scrollbar resize-none"
-                />
-
-                {/* Microphone trigger inside box */}
-                <button
-                  type="button"
-                  onClick={toggleRecording}
-                  className={`absolute bottom-4 right-4 p-3 rounded-xl transition-all shadow-lg flex items-center gap-2 text-xs font-bold ${
-                    isRecording 
-                      ? 'bg-red-500 text-white animate-pulse shadow-red-500/30' 
-                      : 'bg-white/[0.08] hover:bg-white/[0.15] text-gray-200 border border-white/10'
-                  }`}
-                  title={isRecording ? 'Stop Recording' : 'Record Voice Answer'}
-                >
-                  {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4 text-blue-400" />}
-                  <span className="hidden sm:inline">{isRecording ? 'Stop Mic' : 'Voice Input'}</span>
-                </button>
+              <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-inner">
+                {inputMode === 'text' ? (
+                  <>
+                    <textarea
+                      value={answerText}
+                      onChange={(e) => setAnswerText(e.target.value)}
+                      placeholder="Type your response or use the microphone button below to record your voice answer in real-time..."
+                      rows={7}
+                      className="w-full p-4 sm:p-5 bg-black/50 text-white placeholder-gray-500 focus:outline-none focus:bg-black/70 transition-all text-sm font-normal leading-relaxed custom-scrollbar resize-none"
+                    />
+                    {/* Microphone trigger inside box */}
+                    <button
+                      type="button"
+                      onClick={toggleRecording}
+                      className={`absolute bottom-4 right-4 p-3 rounded-xl transition-all shadow-lg flex items-center gap-2 text-xs font-bold ${
+                        isRecording 
+                          ? 'bg-red-500 text-white animate-pulse shadow-red-500/30' 
+                          : 'bg-white/[0.08] hover:bg-white/[0.15] text-gray-200 border border-white/10'
+                      }`}
+                      title={isRecording ? 'Stop Recording' : 'Record Voice Answer'}
+                    >
+                      {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4 text-blue-400" />}
+                      <span className="hidden sm:inline">{isRecording ? 'Stop Mic' : 'Voice Input'}</span>
+                    </button>
+                  </>
+                ) : (
+                  <div className="h-[350px] w-full bg-[#1e1e1e] p-1">
+                    <Editor
+                      height="100%"
+                      language={codeLanguage}
+                      theme="vs-dark"
+                      value={answerText}
+                      onChange={(val) => setAnswerText(val || '')}
+                      options={{
+                        minimap: { enabled: false },
+                        fontSize: 14,
+                        fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+                        scrollBeyondLastLine: false,
+                        smoothScrolling: true,
+                        cursorBlinking: "smooth",
+                        wordWrap: "on",
+                        padding: { top: 16 }
+                      }}
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Action bar */}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Radar, 
   RadarChart, 
@@ -16,7 +16,9 @@ import {
 } from 'recharts';
 import confetti from 'canvas-confetti';
 import { 
-  Award, 
+  Award,
+  FileText,
+  Code2, 
   CheckCircle2, 
   AlertTriangle, 
   RotateCcw, 
@@ -28,7 +30,8 @@ import {
   MessageSquare,
   Zap,
   BookOpen,
-  Home
+  Home,
+  ArrowLeft
 } from 'lucide-react';
 import { mockEvaluationReport } from '../../data/mockData';
 import { cardVariants, containerVariants, buttonVariants } from '../../utils/motion';
@@ -75,6 +78,11 @@ export const FeedbackReportView: React.FC<FeedbackReportViewProps> = ({
   onNavigate,
 }) => {
   const report: EvaluationReport = { ...mockEvaluationReport, role };
+  const [expandedAnswers, setExpandedAnswers] = useState<Record<number, boolean>>({});
+
+  const toggleAnswer = (qNum: number) => {
+    setExpandedAnswers(prev => ({ ...prev, [qNum]: !prev[qNum] }));
+  };
 
   // Fire confetti on mount!
   useEffect(() => {
@@ -98,8 +106,20 @@ export const FeedbackReportView: React.FC<FeedbackReportViewProps> = ({
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="max-w-7xl mx-auto px-4 sm:px-6 pt-24 sm:pt-28 pb-20 space-y-12 relative z-10"
+      className="max-w-7xl mx-auto px-4 sm:px-6 pt-24 sm:pt-28 pb-20 space-y-8 relative z-10"
     >
+      {/* Top Back Button */}
+      <button
+        onClick={() => {
+          sound.playClick();
+          onNavigate('dashboard');
+        }}
+        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] text-sm font-semibold text-gray-300 hover:text-white transition-all shadow-sm backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-blue-500/50 w-fit"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        <span>Back to Dashboard</span>
+      </button>
+
       {/* 1. TOP SCORE HERO & EXECUTIVE SUMMARY */}
       <div className="p-8 sm:p-12 rounded-[32px] bg-gradient-to-br from-[#111827]/90 via-[#111827]/60 to-[#030712]/90 border border-white/[0.12] shadow-2xl backdrop-blur-2xl relative overflow-hidden">
         <div className="absolute -top-32 -right-32 w-96 h-96 bg-gradient-to-br from-green-500/20 via-blue-500/20 to-purple-500/20 rounded-full blur-[90px] pointer-events-none animate-pulseGlow" />
@@ -412,6 +432,40 @@ export const FeedbackReportView: React.FC<FeedbackReportViewProps> = ({
                 <span className="text-purple-400 font-bold block mb-1">AI Rubric Critique:</span>
                 {q.aiFeedback}
               </div>
+              
+              {q.userAnswer && (
+                <div className="pt-3 mt-3 border-t border-white/[0.08]">
+                  <button
+                    type="button"
+                    onClick={() => { sound.playClick(); toggleAnswer(q.questionNumber); }}
+                    className="flex items-center gap-2 text-xs font-bold text-gray-400 hover:text-white transition-colors"
+                  >
+                    {q.isCodeAnswer ? <Code2 className="w-4 h-4" /> : <FileText className="w-4 h-4" />}
+                    <span>{expandedAnswers[q.questionNumber] ? 'Hide Your Answer' : 'View Your Answer'}</span>
+                  </button>
+                  
+                  <AnimatePresence>
+                    {expandedAnswers[q.questionNumber] && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="overflow-hidden mt-3"
+                      >
+                        {q.isCodeAnswer ? (
+                          <div className="p-4 rounded-xl bg-black/60 border border-white/10 text-xs font-mono text-blue-200 overflow-x-auto whitespace-pre-wrap">
+                            {q.userAnswer}
+                          </div>
+                        ) : (
+                          <div className="p-4 rounded-xl bg-white/5 border border-white/10 text-xs text-gray-300 leading-relaxed italic">
+                            "{q.userAnswer}"
+                          </div>
+                        )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              )}
             </div>
           ))}
         </div>

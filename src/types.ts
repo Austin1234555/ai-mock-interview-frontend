@@ -85,6 +85,7 @@ export interface InterviewQuestion {
   timeLimitSeconds: number;
   aiHint?: string;
   modelAnswer?: string;
+  isCodingQuestion?: boolean;
 }
 
 export interface QuestionFeedback {
@@ -108,6 +109,8 @@ export interface QuestionBreakdown {
   aiFeedback: string;
   keyPointsCovered: number;
   totalKeyPoints: number;
+  userAnswer?: string;
+  isCodeAnswer?: boolean;
 }
 
 export interface EvaluationReport {

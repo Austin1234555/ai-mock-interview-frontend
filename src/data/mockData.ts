@@ -175,7 +175,8 @@ export const roleQuestionsMap: Record<string, InterviewQuestion[]> = {
       expectedKeyPoints: ['Young vs Old Generation heap regions', 'Evacuation pauses and concurrent marking', 'ZGC load barriers and colored pointers', 'Tail latency SLA trade-offs'],
       timeLimitSeconds: 180,
       aiHint: 'Mention how ZGC avoids stop-the-world pauses during compaction using colored pointers.',
-      modelAnswer: 'In modern Java microservices, G1GC partitions the heap into equal regions and performs concurrent marking with incremental stop-the-world evacuation pauses. While effective for general workloads, G1GC can suffer from tail latency spikes under heavy allocation. Conversely, ZGC achieves sub-millisecond pauses by using colored pointers and load barriers, performing marking, relocation, and reference processing concurrently with application threads.'
+      modelAnswer: 'In modern Java microservices, G1GC partitions the heap into equal regions and performs concurrent marking with incremental stop-the-world evacuation pauses. While effective for general workloads, G1GC can suffer from tail latency spikes under heavy allocation. Conversely, ZGC achieves sub-millisecond pauses by using colored pointers and load barriers, performing marking, relocation, and reference processing concurrently with application threads.',
+      isCodingQuestion: true
     },
     {
       id: 'jb-q2',
@@ -368,7 +369,23 @@ export const mockEvaluationReport: EvaluationReport = {
       userScore: 95,
       aiFeedback: 'Flawless answer. Accurately highlighted off-screen canvas rendering, spatial indexing (Quadtrees), and operational transformation (OT) / CRDTs for real-time conflict resolution.',
       keyPointsCovered: 4,
-      totalKeyPoints: 4
+      totalKeyPoints: 4,
+      userAnswer: `class CanvasRenderer {
+  constructor(canvasId) {
+    this.canvas = document.getElementById(canvasId);
+    this.ctx = this.canvas.getContext('2d', { alpha: false });
+    this.offscreenCanvas = new OffscreenCanvas(this.canvas.width, this.canvas.height);
+    this.offscreenCtx = this.offscreenCanvas.getContext('2d');
+    this.spatialIndex = new QuadTree(new Rectangle(0, 0, this.canvas.width, this.canvas.height), 4);
+    this.ws = new WebSocket('wss://api.example.com/sync');
+  }
+
+  renderFrame() {
+    // Render loop optimized with requestAnimationFrame
+    requestAnimationFrame(this.renderFrame.bind(this));
+  }
+}`,
+      isCodeAnswer: true
     },
     {
       questionNumber: 2,
@@ -376,7 +393,9 @@ export const mockEvaluationReport: EvaluationReport = {
       userScore: 89,
       aiFeedback: 'Strong practical approach using Strangler Fig pattern and Module Federation. Missed a minor detail regarding shared singleton dependencies like React Router across boundaries.',
       keyPointsCovered: 3,
-      totalKeyPoints: 4
+      totalKeyPoints: 4,
+      userAnswer: 'I would start by implementing the Strangler Fig pattern. We can use Webpack Module Federation to load different micro-frontends dynamically at runtime. For routing, an App Shell architecture would act as the host, managing authentication and global state. We slowly carve out features from the monolith and deploy them as remote modules without taking the system down.',
+      isCodeAnswer: false
     },
     {
       questionNumber: 3,
@@ -384,7 +403,9 @@ export const mockEvaluationReport: EvaluationReport = {
       userScore: 92,
       aiFeedback: 'Excellent breakdown of INP (Interaction to Next Paint) optimization using `startTransition` and yielding to main thread via `setTimeout` or `scheduler.postTask`.',
       keyPointsCovered: 4,
-      totalKeyPoints: 4
+      totalKeyPoints: 4,
+      userAnswer: 'For LCP, I ensure critical CSS is inlined and hero images use priority loading (`fetchpriority="high"`). To eliminate CLS regressions, all images and dynamic ads must have explicit width and height attributes or pre-allocated CSS aspect ratios. For INP, long Javascript tasks blocking the main thread need to be broken up using `scheduler.yield()` or React 18\'s `useTransition` to keep the UI responsive during heavy filtering operations.',
+      isCodeAnswer: false
     }
   ]
 };
