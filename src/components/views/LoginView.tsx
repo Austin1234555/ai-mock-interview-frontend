@@ -21,6 +21,7 @@ import { sound } from '../../utils/sound';
 import { buttonVariants } from '../../utils/motion';
 import type { User } from '../../types';
 import { mockUser } from '../../data/mockData';
+import { OrbitOtp } from '../common/OrbitOtp';
 
 interface LoginViewProps {
   onLoginSuccess: (user: User) => void;
@@ -259,6 +260,14 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, initialIsS
     
     setTimeout(() => {
       setIsLoading(false);
+      
+      const enteredOtp = otp.join('');
+      if (enteredOtp !== '123456') {
+        setErrorMsg("Invalid verification code. Hint: Use 123456");
+        sound.playError();
+        return;
+      }
+
       setIsSuccess(true);
       sound.playSuccess();
       
@@ -669,22 +678,16 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, initialIsS
                   )}
                 </AnimatePresence>
 
-                <div className="flex justify-between gap-2 mt-8">
-                  {otp.map((digit, index) => (
-                    <input
-                      key={index}
-                      ref={(el) => { otpInputRefs.current[index] = el; }}
-                      type="text"
-                      maxLength={1}
-                      value={digit}
-                      onChange={(e) => handleOtpChange(index, e.target.value)}
-                      onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                      onPaste={handleOtpPaste}
-                      disabled={isLoading || isSuccess}
-                      className="w-12 h-14 sm:w-14 sm:h-16 text-center text-xl font-bold rounded-xl bg-black/40 border border-white/10 text-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all shadow-inner"
-                    />
-                  ))}
-                </div>
+                <OrbitOtp
+                  otp={otp}
+                  onChange={handleOtpChange}
+                  onKeyDown={handleOtpKeyDown}
+                  onPaste={handleOtpPaste}
+                  isLoading={isLoading}
+                  isSuccess={isSuccess}
+                  errorMsg={errorMsg}
+                  otpInputRefs={otpInputRefs}
+                />
 
                 <div className="text-center pt-2">
                   <p className="text-xs text-gray-400 mb-2">Didn't receive the code?</p>
