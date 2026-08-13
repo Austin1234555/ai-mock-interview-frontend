@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Sparkles, 
-  Mail, 
-  Lock, 
-  ArrowRight, 
+import {
+  Sparkles,
+  Mail,
+  Lock,
+  ArrowRight,
   ArrowLeft,
-  CheckCircle2, 
+  CheckCircle2,
   AlertCircle,
-  Cpu, 
-  Terminal, 
-  Eye, 
+  Cpu,
+  Terminal,
+  Eye,
   EyeOff,
   Loader2,
   Phone,
@@ -31,22 +31,22 @@ interface LoginViewProps {
 
 export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, initialIsSignUp = false, onNavigateBack }) => {
   const [isSignUp, setIsSignUp] = useState(initialIsSignUp);
-  
+
   // Common states
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
-  
+
   // Sign up specific states
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [mobile, setMobile] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  
+
   // Validation states
   const [errors, setErrors] = useState<Record<string, string>>({});
-  
+
   // Auth state
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -98,7 +98,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, initialIsS
     if (/[a-z]/.test(pass)) score += 1;
     if (/[0-9]/.test(pass)) score += 1;
     if (/[^A-Za-z0-9]/.test(pass)) score += 1;
-    
+
     if (score < 3) return 'Weak';
     if (score < 4) return 'Medium';
     return 'Strong';
@@ -134,31 +134,31 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, initialIsS
       const newErrors: Record<string, string> = {};
       const fNameErr = validateName(firstName, "First name");
       if (fNameErr) newErrors.firstName = fNameErr;
-      
+
       const lNameErr = validateName(lastName, "Last name");
       if (lNameErr) newErrors.lastName = lNameErr;
-      
+
       const emailErr = validateEmail(email);
       if (emailErr) newErrors.email = emailErr;
-      
+
       const mobErr = validateMobile(mobile);
       if (mobErr) newErrors.mobile = mobErr;
-      
+
       const passErr = validatePassword(password);
       if (passErr) newErrors.password = passErr;
-      
+
       if (!confirmPassword) {
         newErrors.confirmPassword = "Confirm password is required.";
       } else if (password !== confirmPassword) {
         newErrors.confirmPassword = "Passwords do not match.";
       }
-      
+
       if (Object.keys(newErrors).length > 0) {
         setErrors(newErrors);
         sound.playError();
         return;
       }
-      
+
       setIsLoading(true);
       setTimeout(() => {
         setIsLoading(false);
@@ -183,7 +183,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, initialIsS
         sound.playError();
         return;
       }
-      
+
       setIsLoading(true);
       setTimeout(() => {
         setIsLoading(false);
@@ -219,11 +219,11 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, initialIsS
 
   const handleOtpChange = (index: number, value: string) => {
     if (!/^\d*$/.test(value)) return;
-    
+
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
-    
+
     if (value && index < 5) {
       otpInputRefs.current[index + 1]?.focus();
     }
@@ -254,13 +254,13 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, initialIsS
       sound.playError();
       return;
     }
-    
+
     setErrorMsg(null);
     setIsLoading(true);
-    
+
     setTimeout(() => {
       setIsLoading(false);
-      
+
       const enteredOtp = otp.join('');
       if (enteredOtp !== '123456') {
         setErrorMsg("Invalid verification code. Hint: Use 123456");
@@ -270,7 +270,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, initialIsS
 
       setIsSuccess(true);
       sound.playSuccess();
-      
+
       setTimeout(() => {
         onLoginSuccess({
           ...mockUser,
@@ -305,7 +305,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, initialIsS
                 exit={{ opacity: 0, x: -20 }}
                 className="max-w-md mx-auto w-full space-y-8"
               >
-          
+
           {onNavigateBack && (
             <motion.button
               initial={{ opacity: 0, x: -20 }}
@@ -336,7 +336,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, initialIsS
                     {isSignUp ? 'Create Your Account' : 'Welcome Back'}
                   </h1>
                   <p className="text-sm text-gray-400 mt-1.5">
-                    {isSignUp 
+                    {isSignUp
                       ? 'Start practicing real interviews with AI and receive personalized feedback to improve your skills.'
                       : 'Practice real interviews with AI and get instant feedback.'}
                   </p>
@@ -629,7 +629,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, initialIsS
                 exit={{ opacity: 0, x: -20 }}
                 className="max-w-md mx-auto w-full space-y-8"
               >
-          
+
           {onNavigateBack && (
             <motion.button
               initial={{ opacity: 0, x: -20 }}
@@ -662,7 +662,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, initialIsS
                     Enter the 6-digit verification code sent to your {mobile ? 'mobile number' : 'email address'}.
                   </p>
                 </div>
-                
+
                 {/* Error Message Display */}
                 <AnimatePresence>
                   {errorMsg && (
@@ -746,7 +746,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, initialIsS
             )}
           </AnimatePresence>
         </div>
-     
+
         {/* Left Column: AI Illustration & Branding (Hidden on small screens) */}
         <div className="hidden lg:col-span-6 p-12 bg-gradient-to-br from-blue-900/40 via-[#111827]/80 to-purple-900/40 border-l border-white/[0.08] relative overflow-hidden flex flex-col justify-between">
           {/* Decorative grid pattern */}
@@ -769,9 +769,9 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, initialIsS
             <div className="relative w-full max-w-md h-72 flex items-center justify-center mb-6">
               {/* Background Glow */}
               <div className="absolute inset-0 bg-gradient-to-tr from-blue-600/20 via-purple-600/20 to-transparent blur-2xl rounded-full" />
-              
+
               {/* Main Analytics Card (Mock) */}
-              <motion.div 
+              <motion.div
                 initial={{ y: 0 }}
                 animate={{ y: [-5, 5, -5] }}
                 transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
@@ -798,7 +798,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, initialIsS
               </motion.div>
 
               {/* Floating Feedback Card 1 */}
-              <motion.div 
+              <motion.div
                 initial={{ y: 0 }}
                 animate={{ y: [5, -5, 5] }}
                 transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
@@ -814,7 +814,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, initialIsS
               </motion.div>
 
               {/* Floating Feedback Card 2 */}
-              <motion.div 
+              <motion.div
                 initial={{ y: 0 }}
                 animate={{ y: [-5, 5, -5] }}
                 transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 2 }}
@@ -844,7 +844,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, initialIsS
               Experience realistic voice architecture, live coding grading, and actionable FAANG scorecards.
             </p>
           </div>
-          
+
           {/* Bottom social proof */}
           <div className="relative z-10 pt-6 border-t border-white/[0.08] flex items-center justify-between text-xs text-gray-400">
             <div className="flex items-center gap-2">
@@ -863,3 +863,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, initialIsS
     </div>
   );
 };
+
+
+
+

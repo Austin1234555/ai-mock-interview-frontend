@@ -10,7 +10,8 @@ import type {
 export const mockUser: User = {
   id: 'usr_9982',
   name: 'Akhil',
-  email: 'akhil@nexusai.dev',
+  email: 's.akhil5679@gmail.com',
+  mobile: '+1 (555) 012-3456',
   avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
   title: 'Full Stack AI Engineer',
   totalInterviews: 28,

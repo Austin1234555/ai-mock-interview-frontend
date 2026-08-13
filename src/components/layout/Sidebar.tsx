@@ -6,7 +6,6 @@ import {
   History, 
   BarChart2, 
   User as UserIcon, 
-  Settings, 
   LogOut, 
   Sparkles,
   ChevronRight,
@@ -37,7 +36,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'history', label: 'Interview History', icon: <History className="w-4 h-4" /> },
     { id: 'analytics', label: 'Reports & Telemetry', icon: <BarChart2 className="w-4 h-4" /> },
     { id: 'profile', label: 'Profile & Rubric', icon: <UserIcon className="w-4 h-4" /> },
-    { id: 'settings', label: 'Settings', icon: <Settings className="w-4 h-4" /> },
   ];
 
   const handleItemClick = (id: AppScreen | 'new-interview') => {

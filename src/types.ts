@@ -32,6 +32,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  mobile?: string;
   avatar: string;
   title: string;
   totalInterviews: number;

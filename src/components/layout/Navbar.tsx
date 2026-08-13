@@ -11,8 +11,7 @@ import {
   BarChart2, 
   Home, 
   LogOut, 
-  History,
-  Settings
+  History
 } from 'lucide-react';
 import { sound } from '../../utils/sound';
 import { buttonVariants } from '../../utils/motion';
@@ -223,14 +222,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                 >
                   <UserIcon className="w-3.5 h-3.5 text-purple-400" />
                   <span>My Profile & Stats</span>
-                </button>
-
-                <button
-                  onClick={() => onNavigate('settings')}
-                  className="w-full text-left px-3 py-2 text-xs text-gray-300 hover:text-white hover:bg-white/[0.06] rounded-xl font-medium transition-colors flex items-center gap-2"
-                >
-                  <Settings className="w-3.5 h-3.5 text-green-400" />
-                  <span>Account Settings</span>
                 </button>
 
                 <div className="my-1 border-t border-white/[0.06]" />

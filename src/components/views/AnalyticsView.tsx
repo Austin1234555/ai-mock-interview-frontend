@@ -8,7 +8,7 @@ import {
   Tooltip as RechartsTooltip, 
   ResponsiveContainer
 } from 'recharts';
-import { TrendingUp, Award, Sparkles, Zap } from 'lucide-react';
+import { TrendingUp, Award, Sparkles, Zap, ArrowLeft } from 'lucide-react';
 import { mockHistoricalScores, mockTopicMastery } from '../../data/mockData';
 import { cardVariants, containerVariants } from '../../utils/motion';
 import { sound } from '../../utils/sound';
@@ -29,6 +29,17 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ onNavigate }) => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
+          <button
+            onClick={() => {
+              sound.playClick();
+              onNavigate('dashboard');
+            }}
+            className="flex items-center gap-2 px-3 py-1.5 mb-4 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] text-gray-400 hover:text-white font-medium text-xs border border-white/[0.08] transition-colors w-fit"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Back to Dashboard</span>
+          </button>
+          
           <div className="flex items-center gap-2 text-purple-400 text-xs font-bold uppercase tracking-wider mb-1">
             <Sparkles className="w-4 h-4" />
             <span>AI Telemetry & Mastery Analytics</span>

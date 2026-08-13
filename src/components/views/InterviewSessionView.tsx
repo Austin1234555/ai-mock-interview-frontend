@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Editor } from '@monaco-editor/react';
-import { 
-  Sparkles, 
-  Send, 
-  Mic, 
-  MicOff, 
-  Clock, 
-  HelpCircle, 
-  Cpu, 
-  RotateCcw, 
+import {
+  Sparkles,
+  Send,
+  Mic,
+  MicOff,
+  Clock,
+  HelpCircle,
+  Cpu,
+  RotateCcw,
   Bot,
   CheckCircle2,
   AlertTriangle,
@@ -19,12 +19,15 @@ import {
   Code2,
   AlignLeft,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Pause,
+  Play
 } from 'lucide-react';
 import { getQuestionsForRole, generateImmediateFeedback } from '../../data/mockData';
 import { cardVariants, buttonVariants } from '../../utils/motion';
 import { sound } from '../../utils/sound';
 import type { InterviewRole, InterviewQuestion, QuestionFeedback } from '../../types';
+import { ConfirmationModal } from '../modals/ConfirmationModal';
 
 interface InterviewSessionViewProps {
   role: InterviewRole;
@@ -44,18 +47,24 @@ export const InterviewSessionView: React.FC<InterviewSessionViewProps> = ({
   const [inputMode, setInputMode] = useState<'text' | 'code'>('text');
   const [codeLanguage, setCodeLanguage] = useState('javascript');
   const [timeLeft, setTimeLeft] = useState(questions[0]?.timeLimitSeconds || 180);
-  
+
   // States: 'answering' | 'evaluating' | 'feedback'
   const [sessionState, setSessionState] = useState<'answering' | 'evaluating' | 'feedback'>('answering');
   const [currentFeedback, setCurrentFeedback] = useState<QuestionFeedback | null>(null);
   const [showModelAnswer, setShowModelAnswer] = useState(false);
+
+  // Pause / Resume & Modals
+  const [isPaused, setIsPaused] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showPauseModal, setShowPauseModal] = useState(false);
+  const [showResumeModal, setShowResumeModal] = useState(false);
 
   const currentQ = questions[currentQIndex] || questions[0];
 
   // Timer countdown
   useEffect(() => {
     let timer: ReturnType<typeof setInterval>;
-    if (sessionState === 'answering' && timeLeft > 0) {
+    if (sessionState === 'answering' && timeLeft > 0 && !isPaused) {
       timer = setInterval(() => {
         setTimeLeft((prev) => prev - 1);
       }, 1000);
@@ -73,6 +82,7 @@ export const InterviewSessionView: React.FC<InterviewSessionViewProps> = ({
     setSessionState('answering');
     setCurrentFeedback(null);
     setShowModelAnswer(false);
+    setIsPaused(false);
     setInputMode(currentQ?.isCodingQuestion ? 'code' : 'text');
   }, [currentQIndex, currentQ]);
 
@@ -88,8 +98,8 @@ export const InterviewSessionView: React.FC<InterviewSessionViewProps> = ({
       setIsRecording(true);
       // Simulate real-time speech to text recognition
       setTimeout(() => {
-        setAnswerText((prev) => 
-          prev ? `${prev} Furthermore, our architecture incorporates stateless microservices scalable via Kubernetes horizontal pod autoscalers.` : 
+        setAnswerText((prev) =>
+          prev ? `${prev} Furthermore, our architecture incorporates stateless microservices scalable via Kubernetes horizontal pod autoscalers.` :
           `To address this in a high-concurrency production environment for ${role}, I would implement an asynchronous message broker like Apache Kafka to decouple ingestion from database persistence, ensuring sub-millisecond tail latency and fault tolerance.`
         );
         setIsRecording(false);
@@ -103,7 +113,7 @@ export const InterviewSessionView: React.FC<InterviewSessionViewProps> = ({
   const handleSimulateAnswer = () => {
     sound.playClick();
     setAnswerText(
-      currentQ.modelAnswer || 
+      currentQ.modelAnswer ||
       `For ${role}, we architecture the solution around high availability and fault tolerance. By leveraging distributed caching with Redis cluster and asynchronous outbox event processing, we eliminate database lock contention while maintaining strict eventual consistency guarantees across microservices.`
     );
   };
@@ -163,19 +173,60 @@ export const InterviewSessionView: React.FC<InterviewSessionViewProps> = ({
             <span>{formatTime(timeLeft)}</span>
           </div>
 
-          <button
-            onClick={() => {
-              if (window.confirm("Are you sure you want to cancel the session? Progress will be discarded.")) {
+          {/* Pause / Resume button */}
+          {!isPaused ? (
+            <button
+              onClick={() => {
                 sound.playClick();
-                onCancelSession();
-              }
-            }}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 font-bold border border-red-500/20 hover:border-red-500/40 transition-all shadow-sm focus:outline-none"
-            title="Cancel Session"
-          >
-            <RotateCcw className="w-4 h-4" />
-            <span className="hidden sm:inline">Cancel Session</span>
-          </button>
+                setShowPauseModal(true);
+              }}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 font-bold border border-amber-500/20 hover:border-amber-500/40 transition-all shadow-sm focus:outline-none"
+              title="Pause Session"
+            >
+              <Pause className="w-4 h-4" />
+              <span className="hidden sm:inline">Pause</span>
+            </button>
+          ) : (
+            <>
+              <button
+                onClick={() => {
+                  sound.playClick();
+                  setShowResumeModal(true);
+                }}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-green-500/10 hover:bg-green-500/20 text-green-400 font-bold border border-green-500/20 hover:border-green-500/40 transition-all shadow-sm focus:outline-none animate-pulse"
+                title="Resume Session"
+              >
+                <Play className="w-4 h-4" />
+                <span className="hidden sm:inline">Resume</span>
+              </button>
+              
+              <button
+                onClick={() => {
+                  sound.playClick();
+                  setShowCancelModal(true);
+                }}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 font-bold border border-indigo-500/20 hover:border-indigo-500/40 transition-all shadow-sm focus:outline-none"
+                title="Back to Dashboard"
+              >
+                <ArrowRight className="w-4 h-4 transform rotate-180" />
+                <span className="hidden sm:inline">Back to Dashboard</span>
+              </button>
+            </>
+          )}
+
+          {!isPaused && (
+            <button
+              onClick={() => {
+                sound.playClick();
+                setShowCancelModal(true);
+              }}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 font-bold border border-red-500/20 hover:border-red-500/40 transition-all shadow-sm focus:outline-none"
+              title="Cancel Session"
+            >
+              <RotateCcw className="w-4 h-4" />
+              <span className="hidden sm:inline">Cancel</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -229,7 +280,7 @@ export const InterviewSessionView: React.FC<InterviewSessionViewProps> = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="space-y-6"
+            className={`space-y-6 transition-opacity duration-300 ${isPaused ? 'opacity-30 pointer-events-none grayscale blur-[2px]' : ''}`}
           >
             {/* Answer Input Area */}
             <div className="p-6 sm:p-8 rounded-[28px] bg-[#111827]/70 border border-white/[0.08] shadow-2xl backdrop-blur-xl space-y-4">
@@ -244,15 +295,15 @@ export const InterviewSessionView: React.FC<InterviewSessionViewProps> = ({
                       </span>
                     )}
                   </label>
-                  
+
                   {/* Toggle Switch */}
                   <div className="flex items-center p-1 rounded-lg bg-black/40 border border-white/10">
                     <button
                       type="button"
                       onClick={() => { sound.playClick(); setInputMode('text'); }}
                       className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-bold transition-all ${
-                        inputMode === 'text' 
-                          ? 'bg-blue-500 text-white shadow-md' 
+                        inputMode === 'text'
+                          ? 'bg-blue-500 text-white shadow-md'
                           : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'
                       }`}
                     >
@@ -263,8 +314,8 @@ export const InterviewSessionView: React.FC<InterviewSessionViewProps> = ({
                       type="button"
                       onClick={() => { sound.playClick(); setInputMode('code'); }}
                       className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-bold transition-all ${
-                        inputMode === 'code' 
-                          ? 'bg-blue-500 text-white shadow-md' 
+                        inputMode === 'code'
+                          ? 'bg-blue-500 text-white shadow-md'
                           : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'
                       } ${currentQ?.isCodingQuestion && inputMode !== 'code' ? 'animate-pulse ring-1 ring-blue-500/50' : ''}`}
                     >
@@ -273,7 +324,7 @@ export const InterviewSessionView: React.FC<InterviewSessionViewProps> = ({
                     </button>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center gap-3">
                   {inputMode === 'code' && (
                     <select
@@ -314,8 +365,8 @@ export const InterviewSessionView: React.FC<InterviewSessionViewProps> = ({
                       type="button"
                       onClick={toggleRecording}
                       className={`absolute bottom-4 right-4 p-3 rounded-xl transition-all shadow-lg flex items-center gap-2 text-xs font-bold ${
-                        isRecording 
-                          ? 'bg-red-500 text-white animate-pulse shadow-red-500/30' 
+                        isRecording
+                          ? 'bg-red-500 text-white animate-pulse shadow-red-500/30'
                           : 'bg-white/[0.08] hover:bg-white/[0.15] text-gray-200 border border-white/10'
                       }`}
                       title={isRecording ? 'Stop Recording' : 'Record Voice Answer'}
@@ -543,6 +594,52 @@ export const InterviewSessionView: React.FC<InterviewSessionViewProps> = ({
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Confirmation Modals */}
+      <ConfirmationModal
+        isOpen={showCancelModal}
+        title="Cancel Interview Session"
+        description="Are you sure you want to cancel this interview session? Your progress and recorded answers will be permanently discarded."
+        confirmText="Yes, Cancel Session"
+        cancelText="No, Continue"
+        isDestructive={true}
+        onConfirm={() => {
+          setShowCancelModal(false);
+          onCancelSession();
+        }}
+        onCancel={() => setShowCancelModal(false)}
+      />
+
+      <ConfirmationModal
+        isOpen={showPauseModal}
+        title="Pause Session"
+        description="Are you sure you want to pause the interview? The timer will be stopped."
+        confirmText="Yes, Pause"
+        cancelText="Cancel"
+        isDestructive={false}
+        onConfirm={() => {
+          setIsPaused(true);
+          setShowPauseModal(false);
+        }}
+        onCancel={() => setShowPauseModal(false)}
+      />
+
+      <ConfirmationModal
+        isOpen={showResumeModal}
+        title="Resume Session"
+        description="Are you ready to resume the interview? The timer will start counting down again."
+        confirmText="Yes, Resume"
+        cancelText="Cancel"
+        isDestructive={false}
+        onConfirm={() => {
+          setIsPaused(false);
+          setShowResumeModal(false);
+        }}
+        onCancel={() => setShowResumeModal(false)}
+      />
     </div>
   );
 };
+
+
+
