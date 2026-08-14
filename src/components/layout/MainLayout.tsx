@@ -4,18 +4,16 @@ import { Sidebar } from './Sidebar';
 import { Navbar } from './Navbar';
 import { BackgroundGlow } from './BackgroundGlow';
 import { SpotlightSearch } from '../modals/SpotlightSearch';
-import { SetupModal } from '../modals/SetupModal';
 import { LogoutModal } from '../modals/LogoutModal';
 import { useAuth } from '../../context/AuthContext';
 import { sound } from '../../utils/sound';
-import type { AppScreen, InterviewRole, InterviewConfig } from '../../types';
+import type { AppScreen, InterviewRole } from '../../types';
 
 export const MainLayout: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [isSetupOpen, setIsSetupOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isLogoutOpen, setIsLogoutOpen] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
@@ -35,13 +33,16 @@ export const MainLayout: React.FC = () => {
   // Convert legacy AppScreen to route paths
   const handleNavigate = (screen: AppScreen, role?: InterviewRole) => {
     if (screen === 'setup') {
-      setIsSetupOpen(true);
+      navigate('/setup');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
 
     const pathMap: Record<string, string> = {
       'dashboard': '/dashboard',
-      'analytics': '/analytics',
+      session: '/interview/session',
+      report: '/interview/report',
+      analytics: '/analytics',
       'history': '/history',
       'profile': '/profile',
       'settings': '/profile',
@@ -52,17 +53,12 @@ export const MainLayout: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleStartInterviewFromSetup = (config: InterviewConfig) => {
-    setIsSetupOpen(false);
-    navigate('/interview/loading', { state: { config, role: config.role } });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
   const getCurrentScreen = (): AppScreen => {
     const path = location.pathname;
     if (path.includes('analytics')) return 'analytics';
     if (path.includes('history')) return 'history';
     if (path.includes('profile')) return 'profile';
+    if (path.includes('setup')) return 'setup';
     if (path.includes('dashboard')) return 'dashboard';
     return 'dashboard';
   };
@@ -78,7 +74,7 @@ export const MainLayout: React.FC = () => {
         onNavigate={handleNavigate}
         user={user!}
         onOpenLogout={() => setIsLogoutOpen(true)}
-        onOpenSetup={() => setIsSetupOpen(true)}
+        onOpenSetup={() => { navigate('/setup'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
       />
 
       <Navbar
@@ -89,7 +85,7 @@ export const MainLayout: React.FC = () => {
         onToggleMute={handleToggleMute}
         user={user!}
         onOpenLogout={() => setIsLogoutOpen(true)}
-        onOpenSetup={() => setIsSetupOpen(true)}
+        onOpenSetup={() => { navigate('/setup'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
       />
 
       <SpotlightSearch
@@ -98,12 +94,6 @@ export const MainLayout: React.FC = () => {
         onNavigate={handleNavigate}
         isMuted={isMuted}
         onToggleMute={handleToggleMute}
-      />
-
-      <SetupModal
-        isOpen={isSetupOpen}
-        onClose={() => setIsSetupOpen(false)}
-        onStartInterview={handleStartInterviewFromSetup}
       />
 
       <LogoutModal
@@ -121,7 +111,7 @@ export const MainLayout: React.FC = () => {
           <p>© 2026 Nexus Studio. Built with Apple, Linear, and Vercel design aesthetics.</p>
           <div className="flex items-center gap-6 font-medium text-gray-400">
             <span onClick={() => setIsSearchOpen(true)} className="cursor-pointer hover:text-white transition-colors">⌘K Command Center</span>
-            <span onClick={() => setIsSetupOpen(true)} className="cursor-pointer hover:text-white transition-colors">New Interview</span>
+            <span onClick={() => { navigate('/setup'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="cursor-pointer hover:text-white transition-colors">New Interview</span>
             <span onClick={() => navigate('/analytics')} className="cursor-pointer hover:text-white transition-colors">Telemetry</span>
             <span onClick={() => setIsLogoutOpen(true)} className="cursor-pointer text-red-400 hover:text-red-300 transition-colors">Logout</span>
           </div>

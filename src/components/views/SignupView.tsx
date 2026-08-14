@@ -23,14 +23,14 @@ import type { User } from '../../types';
 import { mockUser } from '../../data/mockData';
 import { OrbitOtp } from '../common/OrbitOtp';
 
-interface LoginViewProps {
-  onLoginSuccess: (user: User) => void;
+interface SignupViewProps {
+  onSignupSuccess: (user: User) => void;
   onNavigateBack?: () => void;
-  onNavigateToSignup?: () => void;
+  onNavigateToLogin?: () => void;
 }
 
-export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onNavigateBack, onNavigateToSignup }) => {
-  const isSignUp = false; // Hardcoded for LoginView to keep rendering logic intact
+export const SignupView: React.FC<SignupViewProps> = ({ onSignupSuccess, onNavigateBack, onNavigateToLogin }) => {
+  const isSignUp = true; // Hardcoded for SignupView to keep rendering logic intact
 
   // Common states
   const [email, setEmail] = useState('');
@@ -190,7 +190,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onNavigate
         setIsSuccess(true);
         sound.playSuccess();
         setTimeout(() => {
-          onLoginSuccess({
+          onSignupSuccess({
             ...mockUser,
             email: email
           });
@@ -209,7 +209,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onNavigate
       setIsSuccess(true);
       sound.playSuccess();
       setTimeout(() => {
-        onLoginSuccess({
+        onSignupSuccess({
           ...mockUser,
           name: `${provider} Engineer`
         });
@@ -272,7 +272,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onNavigate
       sound.playSuccess();
 
       setTimeout(() => {
-        onLoginSuccess({
+        onSignupSuccess({
           ...mockUser,
           name: `${firstName} ${lastName}`.trim() || mockUser.name,
           email: email
@@ -605,16 +605,16 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onNavigate
                 {/* Bottom Section Toggle */}
                 <div className="text-center pt-4 border-t border-white/[0.08]">
                   <p className="text-xs text-gray-400">
-                    Don't have an account?{' '}
+                    Already have an account?{' '}
                     <button
                       type="button"
                       onClick={() => {
                         sound.playClick();
-                        if (onNavigateToSignup) onNavigateToSignup();
+                        if (onNavigateToLogin) onNavigateToLogin();
                       }}
                       className="text-blue-400 hover:text-blue-300 font-extrabold ml-1 transition-colors underline underline-offset-4"
                     >
-                      Create Account
+                      Sign In
                     </button>
                   </p>
                 </div>

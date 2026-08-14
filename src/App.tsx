@@ -8,6 +8,8 @@ import { BackgroundGlow } from './components/layout/BackgroundGlow';
 
 import { LandingView } from './components/views/LandingView';
 import { LoginView } from './components/views/LoginView';
+import { SignupView } from './components/views/SignupView';
+import { SetupView } from './components/views/SetupView';
 import { DashboardView } from './components/views/DashboardView';
 import { LoadingOrbView } from './components/views/LoadingOrbView';
 import { InterviewSessionView } from './components/views/InterviewSessionView';
@@ -18,7 +20,7 @@ import { ProfileSettingsView } from './components/views/ProfileSettingsView';
 import type { InterviewRole, AppScreen } from './types';
 
 // Wrapper for Auth views
-const LoginWrapper = ({ isSignUp }: { isSignUp?: boolean }) => {
+const LoginWrapper = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
   return (
@@ -31,7 +33,37 @@ const LoginWrapper = ({ isSignUp }: { isSignUp?: boolean }) => {
             navigate('/dashboard');
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
-          initialIsSignUp={isSignUp}
+          onNavigateToSignup={() => {
+            navigate('/signup');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          onNavigateBack={() => {
+            navigate('/');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+        />
+      </div>
+    </div>
+  );
+};
+
+const SignupWrapper = () => {
+  const { login } = useAuth();
+  const navigate = useNavigate();
+  return (
+    <div className="min-h-screen text-gray-100 relative font-sans selection:bg-blue-500/30 selection:text-blue-200 flex flex-col">
+      <BackgroundGlow />
+      <div className="flex-1">
+        <SignupView
+          onSignupSuccess={(user) => {
+            login(user);
+            navigate('/dashboard');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          onNavigateToLogin={() => {
+            navigate('/login');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
           onNavigateBack={() => {
             navigate('/');
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -60,19 +92,39 @@ const LandingWrapper = () => {
 
 // Wrapper for Dashboard
 const DashboardWrapper = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   return (
     <DashboardView
-      onNavigate={(screen) => {
+      onNavigate={(screen, role) => {
+        if (screen === 'setup') {
+          navigate('/setup');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          return;
+        }
         const pathMap: Record<string, string> = {
           'analytics': '/analytics',
           'profile': '/profile',
+          'history': '/history',
+          'session': '/interview/session',
+          'report': '/interview/report',
         };
-        if (pathMap[screen]) navigate(pathMap[screen]);
+        const targetRoute = pathMap[screen];
+        if (targetRoute) {
+          navigate(targetRoute, { state: { role } });
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
       }}
-      onOpenSetup={() => { /* Handled in MainLayout now */ }}
-      onOpenLogout={() => { /* Handled in MainLayout now */ }}
+      onOpenSetup={() => {
+        navigate('/setup');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }}
+      onOpenLogout={() => {
+        // Just trigger standard logout flow or dispatch event if MainLayout handles modal
+        // Easiest is to just call logout directly or navigate home
+        logout();
+        navigate('/');
+      }}
       user={user!}
     />
   );
@@ -158,6 +210,20 @@ const ProfileWrapper = () => {
   );
 };
 
+const SetupWrapper = () => {
+  const navigate = useNavigate();
+  return (
+    <SetupView
+      onNavigateBack={() => {
+        navigate('/dashboard');
+      }}
+      onStartInterview={(config) => {
+        navigate('/interview/loading', { state: { config, role: config.role } });
+      }}
+    />
+  );
+};
+
 const AppRoutes = () => {
   const { user } = useAuth();
 
@@ -166,11 +232,12 @@ const AppRoutes = () => {
       {/* Public Routes */}
       <Route path="/" element={user ? <Navigate to="/dashboard" replace /> : <LandingWrapper />} />
       <Route path="/login" element={user ? <Navigate to="/dashboard" replace /> : <LoginWrapper />} />
-      <Route path="/signup" element={user ? <Navigate to="/dashboard" replace /> : <LoginWrapper isSignUp={true} />} />
+      <Route path="/signup" element={user ? <Navigate to="/dashboard" replace /> : <SignupWrapper />} />
 
       {/* Main App Layout (Authenticated with Navigation) */}
       <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
         <Route path="/dashboard" element={<DashboardWrapper />} />
+        <Route path="/setup" element={<SetupWrapper />} />
         <Route path="/analytics" element={<AnalyticsWrapper />} />
         <Route path="/history" element={<HistoryWrapper />} />
         <Route path="/profile" element={<ProfileWrapper />} />

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { 
-  X, 
   Play, 
   Terminal, 
   Cpu, 
@@ -16,9 +15,10 @@ import {
   Database,
   Smartphone,
   Cloud,
-  Layout
+  Layout,
+  ArrowLeft
 } from 'lucide-react';
-import { modalVariants, buttonVariants } from '../../utils/motion';
+import { containerVariants, buttonVariants } from '../../utils/motion';
 import { sound } from '../../utils/sound';
 import type { 
   InterviewRole, 
@@ -28,16 +28,14 @@ import type {
   InterviewDuration 
 } from '../../types';
 
-interface SetupModalProps {
-  isOpen: boolean;
-  onClose: () => void;
+interface SetupViewProps {
   onStartInterview: (config: InterviewConfig) => void;
+  onNavigateBack: () => void;
 }
 
-export const SetupModal: React.FC<SetupModalProps> = ({
-  isOpen,
-  onClose,
+export const SetupView: React.FC<SetupViewProps> = ({
   onStartInterview,
+  onNavigateBack,
 }) => {
   const [role, setRole] = useState<InterviewRole>('Java Backend');
   const [level, setLevel] = useState<ExperienceLevel>('3–5 Years');
@@ -46,8 +44,6 @@ export const SetupModal: React.FC<SetupModalProps> = ({
   const [questionCount, setQuestionCount] = useState<number>(10);
   const [focusArea, setFocusArea] = useState<string>('System Architecture & Scalability');
   const [includeCoding, setIncludeCoding] = useState<boolean>(true);
-
-  if (!isOpen) return null;
 
   const roles: { id: InterviewRole; label: string; icon: React.ReactNode; desc: string }[] = [
     { id: 'Java Backend', label: 'Java Backend', icon: <Database className="w-4 h-4 text-orange-400" />, desc: 'JVM, Spring Boot, Microservices, SAGA' },
@@ -81,25 +77,28 @@ export const SetupModal: React.FC<SetupModalProps> = ({
   };
 
   return (
-    <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto custom-scrollbar">
-        {/* Backdrop */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={onClose}
-          className="fixed inset-0 bg-black/80 backdrop-blur-md"
-        />
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="max-w-7xl mx-auto px-4 sm:px-6 pt-24 sm:pt-28 pb-20 space-y-8 relative z-10"
+    >
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <button
+            onClick={() => {
+              sound.playClick();
+              onNavigateBack();
+            }}
+            className="flex items-center gap-2 px-3 py-1.5 mb-4 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] text-gray-400 hover:text-white font-medium text-xs border border-white/[0.08] transition-colors w-fit"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Back to Dashboard</span>
+          </button>
+        </div>
+      </div>
 
-        {/* 28px Dialog Card */}
-        <motion.div
-          variants={modalVariants}
-          initial="hidden"
-          animate="visible"
-          exit="exit"
-          className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto custom-scrollbar p-6 sm:p-8 rounded-[28px] bg-[#111827]/95 border border-white/[0.12] shadow-2xl backdrop-blur-2xl text-left space-y-6 z-10"
-        >
+      <div className="w-full max-w-4xl mx-auto p-6 sm:p-8 rounded-[28px] bg-[#111827]/95 border border-white/[0.12] shadow-2xl backdrop-blur-2xl text-left space-y-6 z-10">
           {/* Header */}
           <div className="flex items-center justify-between pb-4 border-b border-white/[0.08]">
             <div className="flex items-center gap-3">
@@ -115,15 +114,6 @@ export const SetupModal: React.FC<SetupModalProps> = ({
                 </p>
               </div>
             </div>
-            <button
-              onClick={() => {
-                sound.playClick();
-                onClose();
-              }}
-              className="p-2 rounded-full bg-white/[0.05] hover:bg-white/[0.1] text-gray-400 hover:text-white transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
           </div>
 
           {/* 1. Job Role Selection */}
@@ -325,7 +315,7 @@ export const SetupModal: React.FC<SetupModalProps> = ({
                 type="button"
                 onClick={() => {
                   sound.playClick();
-                  onClose();
+                  onNavigateBack();
                 }}
                 className="px-5 py-3 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] text-xs font-semibold text-gray-300 transition-colors"
               >
@@ -344,8 +334,7 @@ export const SetupModal: React.FC<SetupModalProps> = ({
               </motion.button>
             </div>
           </div>
-        </motion.div>
-      </div>
-    </AnimatePresence>
+        </div>
+    </motion.div>
   );
 };
