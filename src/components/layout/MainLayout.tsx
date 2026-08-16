@@ -17,6 +17,7 @@ export const MainLayout: React.FC = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isLogoutOpen, setIsLogoutOpen] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleToggleMute = () => {
     const muted = sound.toggleMute();
@@ -69,12 +70,31 @@ export const MainLayout: React.FC = () => {
     <div className="min-h-screen text-gray-100 relative font-sans selection:bg-blue-500/30 selection:text-blue-200 flex flex-col">
       <BackgroundGlow />
 
+      {/* Mobile Backdrop Overlay */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
       <Sidebar
         currentScreen={currentScreen}
-        onNavigate={handleNavigate}
+        onNavigate={(screen, role) => {
+          setIsMobileMenuOpen(false);
+          handleNavigate(screen, role);
+        }}
         user={user!}
-        onOpenLogout={() => setIsLogoutOpen(true)}
-        onOpenSetup={() => { navigate('/setup'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+        onOpenLogout={() => {
+          setIsMobileMenuOpen(false);
+          setIsLogoutOpen(true);
+        }}
+        onOpenSetup={() => { 
+          setIsMobileMenuOpen(false);
+          navigate('/setup'); 
+          window.scrollTo({ top: 0, behavior: 'smooth' }); 
+        }}
+        isMobileMenuOpen={isMobileMenuOpen}
       />
 
       <Navbar
@@ -86,6 +106,8 @@ export const MainLayout: React.FC = () => {
         user={user!}
         onOpenLogout={() => setIsLogoutOpen(true)}
         onOpenSetup={() => { navigate('/setup'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+        onToggleMobileMenu={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        isMobileMenuOpen={isMobileMenuOpen}
       />
 
       <SpotlightSearch
@@ -102,11 +124,11 @@ export const MainLayout: React.FC = () => {
         onConfirmLogout={handleConfirmLogout}
       />
 
-      <main className="relative z-10 overflow-hidden min-h-screen flex-1 transition-all duration-300 md:pl-64">
+      <main className="relative z-10 overflow-hidden min-h-screen flex-1 transition-all duration-300 lg:pl-64">
         <Outlet />
       </main>
 
-      <footer className="relative z-10 md:pl-64 px-6 py-8 border-t border-white/[0.06] text-center text-xs text-gray-500 bg-[#030712]/60">
+      <footer className="relative z-10 lg:pl-64 px-6 py-8 border-t border-white/[0.06] text-center text-xs text-gray-500 bg-[#030712]/60">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <p>© 2026 Nexus Studio. Built with Apple, Linear, and Vercel design aesthetics.</p>
           <div className="flex items-center gap-6 font-medium text-gray-400">

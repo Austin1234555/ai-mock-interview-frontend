@@ -11,7 +11,9 @@ import {
   BarChart2, 
   Home, 
   LogOut, 
-  History
+  History,
+  Menu,
+  X
 } from 'lucide-react';
 import { sound } from '../../utils/sound';
 import { buttonVariants } from '../../utils/motion';
@@ -26,6 +28,8 @@ interface NavbarProps {
   user: User | null;
   onOpenLogout: () => void;
   onOpenSetup: () => void;
+  onToggleMobileMenu: () => void;
+  isMobileMenuOpen: boolean;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -37,6 +41,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   user,
   onOpenLogout,
   onOpenSetup,
+  onToggleMobileMenu,
+  isMobileMenuOpen,
 }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -62,7 +68,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   ];
 
   return (
-    <header className="fixed top-0 left-0 md:left-64 right-0 z-30 px-4 sm:px-6 pt-4 transition-all duration-300">
+    <header className="fixed top-0 left-0 lg:left-64 right-0 z-30 px-4 sm:px-6 pt-4 transition-all duration-300">
       <motion.div
         animate={{
           height: isScrolled ? '64px' : '76px',
@@ -77,49 +83,30 @@ export const Navbar: React.FC<NavbarProps> = ({
       >
         {/* Mobile Brand / Left Title */}
         <div className="flex items-center gap-3">
-          <div className="md:hidden flex items-center gap-2" onClick={() => onNavigate('dashboard')}>
+          <button 
+            onClick={() => {
+              sound.playClick();
+              onToggleMobileMenu();
+            }}
+            className="lg:hidden p-2 -ml-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/[0.08] transition-colors"
+          >
+            {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+          <div className="lg:hidden flex items-center gap-2 cursor-pointer" onClick={() => onNavigate('dashboard')}>
             <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-500 to-indigo-600 flex items-center justify-center shadow-md">
               <Sparkles className="w-4 h-4 text-white" />
             </div>
-            <span className="font-extrabold text-white text-base">AI Interview</span>
+            <span className="font-extrabold text-white text-base hidden sm:block">AI Interview</span>
           </div>
 
           {/* Desktop Breadcrumb/Status */}
-          <div className="hidden md:flex items-center gap-2 text-xs font-semibold text-gray-400">
+          <div className="hidden lg:flex items-center gap-2 text-xs font-semibold text-gray-400">
             <span className="text-blue-400 uppercase font-extrabold tracking-wider">Workspace</span>
             <span>/</span>
             <span className="text-white capitalize font-bold">{currentScreen.replace('-', ' ')}</span>
           </div>
         </div>
 
-        {/* Center Mobile Navigation Links */}
-        <nav className="flex md:hidden items-center gap-1 bg-white/[0.03] p-1 rounded-2xl border border-white/[0.05]">
-          {navItems.map((item) => {
-            const isActive = currentScreen === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => {
-                  sound.playClick();
-                  onNavigate(item.id);
-                }}
-                className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
-                  isActive ? 'text-white font-bold' : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                {isActive && (
-                  <motion.div
-                    layoutId="mobile-nav-indicator"
-                    className="absolute inset-0 bg-blue-500/20 border border-blue-500/40 rounded-xl -z-10"
-                    transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-                  />
-                )}
-                {item.icon}
-                <span className="hidden sm:inline">{item.label}</span>
-              </button>
-            );
-          })}
-        </nav>
 
         {/* Right Action Tools */}
         <div className="flex items-center gap-3">
@@ -133,7 +120,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             title="Open Spotlight Search (Cmd + K)"
           >
             <Search className="w-3.5 h-3.5 text-gray-400 group-hover:text-blue-400 transition-colors" />
-            <span className="hidden lg:inline">Command Center</span>
+            <span className="hidden xl:inline">Command Center</span>
             <kbd className="px-1.5 py-0.5 rounded bg-[#030712]/60 border border-white/10 text-[10px] text-gray-400 font-sans">
               ⌘K
             </kbd>
@@ -164,7 +151,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             title="Logout of session"
           >
             <LogOut className="w-4 h-4 text-gray-400 hover:text-red-400 transition-colors" />
-            <span className="hidden lg:inline text-xs font-bold">Logout</span>
+            <span className="hidden xl:inline text-xs font-bold">Logout</span>
           </button>
 
           {/* Primary CTA: Start Interview */}

@@ -20,6 +20,7 @@ interface SidebarProps {
   user: User;
   onOpenLogout: () => void;
   onOpenSetup: () => void;
+  isMobileMenuOpen: boolean;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -28,6 +29,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   user,
   onOpenLogout,
   onOpenSetup,
+  isMobileMenuOpen,
 }) => {
   const navItems: { id: AppScreen | 'new-interview'; label: string; icon: React.ReactNode; badge?: string }[] = [
     { id: 'landing', label: 'Explore Studio', icon: <Sparkles className="w-4 h-4" /> },
@@ -48,7 +50,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   return (
-    <aside className="hidden md:flex flex-col w-64 h-screen fixed left-0 top-0 bg-[#0b1120]/90 border-r border-white/[0.08] backdrop-blur-2xl z-40 selection:bg-blue-500/30">
+    <aside className={`flex flex-col w-64 h-screen fixed left-0 top-0 bg-[#0b1120]/90 border-r border-white/[0.08] backdrop-blur-2xl z-50 selection:bg-blue-500/30 transition-transform duration-300 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
       {/* Top Brand */}
       <div className="p-6 pb-4 flex items-center gap-3 border-b border-white/[0.06]">
         <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-500 via-indigo-600 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/30 border border-white/20">

@@ -165,10 +165,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="max-w-7xl mx-auto px-4 sm:px-6 pt-24 sm:pt-28 pb-20 space-y-12 relative z-10"
+      className="max-w-7xl mx-auto px-4 sm:px-6 pt-24 sm:pt-28 pb-20 space-y-8 lg:space-y-12 relative z-10"
     >
       {/* 1. PERSONALIZED WELCOME HERO BANNER */}
-      <div className="p-8 sm:p-12 rounded-[32px] bg-gradient-to-br from-[#111827]/90 via-[#111827]/60 to-[#030712]/90 border border-white/[0.12] shadow-2xl backdrop-blur-2xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8">
+      <div className="p-6 sm:p-8 lg:p-12 rounded-[32px] bg-gradient-to-br from-[#111827]/90 via-[#111827]/60 to-[#030712]/90 border border-white/[0.12] shadow-2xl backdrop-blur-2xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 lg:gap-8">
         <div className="absolute -top-32 -right-32 w-96 h-96 bg-gradient-to-br from-blue-600/20 via-purple-600/20 to-transparent rounded-full blur-[90px] pointer-events-none animate-pulseGlow" />
         
         <div className="space-y-3 relative z-10 text-center md:text-left">
@@ -223,7 +223,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <span className="text-xs font-bold text-gray-400">Real-time telemetry</span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4 sm:gap-6">
           {mockMetrics.map((metric) => (
             <motion.div
               key={metric.id}
