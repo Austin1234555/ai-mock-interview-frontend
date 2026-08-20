@@ -72,8 +72,12 @@ export interface RecentSession {
   date: string;
   duration: string;
   score: number;
-  status: 'Completed' | 'In Progress' | 'Needs Review';
+  status: 'Completed' | 'In Progress' | 'Needs Review' | 'Paused';
   accuracy: string;
+  technicalScore?: number;
+  communicationScore?: number;
+  confidenceScore?: number;
+  problemSolvingScore?: number;
 }
 
 export interface InterviewQuestion {
@@ -132,6 +136,8 @@ export interface EvaluationReport {
   actionableSuggestions: string[];
   recommendedTopics: string[];
   questionBreakdown: QuestionBreakdown[];
+  originalConfig?: InterviewConfig;
+  retakeHistory?: RecentSession[];
 }
 
 export type AppScreen = 

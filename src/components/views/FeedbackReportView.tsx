@@ -31,7 +31,11 @@ import {
   Zap,
   BookOpen,
   Home,
-  ArrowLeft
+  ArrowLeft,
+  Play,
+  ChevronDown,
+  ChevronUp,
+  ArrowUpRight
 } from 'lucide-react';
 import { mockEvaluationReport } from '../../data/mockData';
 import { cardVariants, containerVariants, buttonVariants } from '../../utils/motion';
@@ -41,6 +45,7 @@ import type { AppScreen, InterviewRole, EvaluationReport } from '../../types';
 interface FeedbackReportViewProps {
   role: InterviewRole;
   onNavigate: (screen: AppScreen, role?: InterviewRole) => void;
+  onRetake?: (config: any) => void;
 }
 
 // Helper component for animated number counter
@@ -76,9 +81,11 @@ const AnimatedScoreCounter: React.FC<{ target: number }> = ({ target }) => {
 export const FeedbackReportView: React.FC<FeedbackReportViewProps> = ({
   role,
   onNavigate,
+  onRetake,
 }) => {
   const report: EvaluationReport = { ...mockEvaluationReport, role };
   const [expandedAnswers, setExpandedAnswers] = useState<Record<number, boolean>>({});
+  const [selectedComparison, setSelectedComparison] = useState<string | null>(null);
 
   const toggleAnswer = (qNum: number) => {
     setExpandedAnswers(prev => ({ ...prev, [qNum]: !prev[qNum] }));
@@ -100,6 +107,8 @@ export const FeedbackReportView: React.FC<FeedbackReportViewProps> = ({
   }, []);
 
   const barColors = ['#3B82F6', '#6366F1', '#8B5CF6', '#22C55E'];
+  const retakeLimit = 2;
+  const retakesReachedLimit = (report.retakeHistory?.length || 0) >= retakeLimit;
 
   return (
     <motion.div
@@ -225,16 +234,27 @@ export const FeedbackReportView: React.FC<FeedbackReportViewProps> = ({
               <motion.button
                 type="button"
                 variants={buttonVariants}
-                whileHover="hover"
-                whileTap="tap"
+                whileHover={retakesReachedLimit ? "" : "hover"}
+                whileTap={retakesReachedLimit ? "" : "tap"}
+                disabled={retakesReachedLimit}
                 onClick={() => {
+                  if (retakesReachedLimit) return;
                   sound.playClick();
-                  onNavigate('setup', report.role);
+                  if (onRetake && report.originalConfig) {
+                    onRetake(report.originalConfig);
+                  } else {
+                    onNavigate('setup', report.role);
+                  }
                 }}
-                className="flex items-center gap-2 px-5 py-3.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] text-gray-200 font-bold text-sm border border-white/[0.08] transition-colors"
+                className={`flex items-center gap-2 px-5 py-3.5 rounded-xl border border-white/[0.08] transition-colors text-sm font-bold ${
+                  retakesReachedLimit 
+                    ? 'bg-gray-800/50 text-gray-500 cursor-not-allowed opacity-60' 
+                    : 'bg-white/[0.05] hover:bg-white/[0.1] text-gray-200'
+                }`}
+                title={retakesReachedLimit ? "Maximum retake limit reached (2)" : ""}
               >
-                <RotateCcw className="w-4 h-4 text-blue-400" />
-                <span>Retake Interview</span>
+                <RotateCcw className={`w-4 h-4 ${retakesReachedLimit ? 'text-gray-500' : 'text-blue-400'}`} />
+                <span>{retakesReachedLimit ? 'Retake Limit Reached' : 'Retake Interview'}</span>
               </motion.button>
 
               <button
@@ -470,6 +490,189 @@ export const FeedbackReportView: React.FC<FeedbackReportViewProps> = ({
           ))}
         </div>
       </div>
+      {/* 6. RETAKE HISTORY */}
+      {report.retakeHistory && report.retakeHistory.length > 0 && (
+        <div className="space-y-4 pt-4">
+          <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+            <RotateCcw className="w-5 h-5 text-blue-400" />
+            <span>Retake History</span>
+            <span className="text-xs font-semibold text-gray-400 bg-white/[0.05] px-2 py-0.5 rounded-md ml-2 border border-white/[0.05]">
+              {report.retakeHistory.length} / {retakeLimit} Retakes Used
+            </span>
+          </h2>
+          <div className="rounded-[28px] bg-[#111827]/80 border border-white/[0.08] shadow-2xl backdrop-blur-xl overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-white/[0.08] text-[11px] font-extrabold uppercase tracking-widest text-gray-400 bg-black/20">
+                    <th className="py-4 px-6">Interview Role</th>
+                    <th className="py-4 px-6">Difficulty</th>
+                    <th className="py-4 px-6">Date</th>
+                    <th className="py-4 px-6">Duration</th>
+                    <th className="py-4 px-6">Score</th>
+                    <th className="py-4 px-6">Status</th>
+                    <th className="py-4 px-6 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/[0.04] text-xs sm:text-sm font-medium">
+                  {report.retakeHistory.map((session) => (
+                    <React.Fragment key={session.id}>
+                      <motion.tr
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="hover:bg-white/[0.03] transition-colors group"
+                      >
+                        <td className="py-4 px-6 font-bold text-white flex items-center gap-3">
+                          <div className="w-2 h-2 rounded-full bg-blue-500 group-hover:scale-150 transition-transform" />
+                          <div>
+                            <span>{session.role}</span>
+                            <span className="text-[11px] font-normal text-gray-400 block">{session.level}</span>
+                          </div>
+                        </td>
+                        <td className="py-4 px-6">
+                          <span className={`px-2.5 py-1 rounded-md text-xs font-bold ${
+                            session.difficulty === 'Hard' ? 'bg-red-500/15 text-red-300 border border-red-500/30' :
+                            session.difficulty === 'Medium' ? 'bg-amber-500/15 text-amber-300 border border-amber-500/30' :
+                            'bg-green-500/15 text-green-300 border border-green-500/30'
+                          }`}>
+                            {session.difficulty || 'Medium'}
+                          </span>
+                        </td>
+                        <td className="py-4 px-6 text-gray-400">{session.date}</td>
+                        <td className="py-4 px-6 text-gray-300 font-semibold">{session.duration}</td>
+                        <td className="py-4 px-6">
+                          {session.status === 'Completed' ? (
+                            <span className="font-extrabold text-blue-400 bg-blue-500/10 px-2.5 py-1 rounded-lg border border-blue-500/20">
+                              {session.score}%
+                            </span>
+                          ) : (
+                            <span className="text-gray-500">-</span>
+                          )}
+                        </td>
+                        <td className="py-4 px-6">
+                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${
+                            session.status === 'Completed' ? 'bg-green-500/15 text-green-400' :
+                            session.status === 'Paused' ? 'bg-gray-500/15 text-gray-400' :
+                            'bg-amber-500/15 text-amber-400'
+                          }`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${
+                              session.status === 'Completed' ? 'bg-green-500' : 
+                              session.status === 'Paused' ? 'bg-gray-400' : 'bg-amber-500 animate-ping'
+                            }`} />
+                            {session.status}
+                          </span>
+                        </td>
+                        <td className="py-4 px-6 text-right">
+                          {session.status === 'Completed' ? (
+                            <button
+                              onClick={() => {
+                                sound.playClick();
+                                setSelectedComparison(selectedComparison === session.id ? null : session.id);
+                              }}
+                              className="px-3 py-1.5 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] text-xs font-bold text-gray-200 border border-white/[0.08] transition-colors inline-flex items-center gap-1"
+                            >
+                              <span>Compare & Review</span>
+                              {selectedComparison === session.id ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                            </button>
+                          ) : session.status === 'Paused' ? (
+                            <button
+                              onClick={() => {
+                                sound.playClick();
+                                onNavigate('session', session.role);
+                              }}
+                              className="px-3 py-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-xs font-bold text-blue-400 border border-blue-500/20 transition-colors inline-flex items-center gap-1 shadow-sm"
+                            >
+                              <Play className="w-3 h-3 fill-current" />
+                              <span>Resume</span>
+                            </button>
+                          ) : null}
+                        </td>
+                      </motion.tr>
+                      
+                      {/* Expansion Row */}
+                      <AnimatePresence>
+                        {selectedComparison === session.id && (
+                          <tr>
+                            <td colSpan={7} className="p-0 border-0">
+                              <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                className="overflow-hidden"
+                              >
+                                <div className="p-6 bg-black/40 border-t border-white/[0.04]">
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {/* Left: Score Deltas */}
+                                    <div className="space-y-4">
+                                      <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                                        <TrendingUp className="w-4 h-4 text-purple-400" />
+                                        Score Improvements
+                                      </h3>
+                                      <div className="space-y-3">
+                                        {[
+                                          { label: 'Overall Score', original: report.overallScore, retake: session.score },
+                                          { label: 'Technical Score', original: report.technicalScore, retake: session.technicalScore || 0 },
+                                          { label: 'Communication Score', original: report.communicationScore, retake: session.communicationScore || 0 },
+                                        ].map((metric, idx) => {
+                                          const diff = metric.retake - metric.original;
+                                          const isPositive = diff > 0;
+                                          const isZero = diff === 0;
+                                          return (
+                                            <div key={idx} className="flex items-center justify-between p-3 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+                                              <span className="text-xs font-semibold text-gray-300">{metric.label}</span>
+                                              <div className="flex items-center gap-3">
+                                                <div className="text-xs text-gray-400">
+                                                  {metric.original}% → <strong className="text-white">{metric.retake}%</strong>
+                                                </div>
+                                                <span className={`px-2 py-1 rounded text-[10px] font-bold ${
+                                                  isPositive ? 'bg-green-500/20 text-green-400' :
+                                                  isZero ? 'bg-gray-500/20 text-gray-400' : 'bg-red-500/20 text-red-400'
+                                                }`}>
+                                                  {isPositive ? '+' : ''}{diff}%
+                                                </span>
+                                              </div>
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                    </div>
+                                    
+                                    {/* Right: Quick Chart */}
+                                    <div className="h-[200px] bg-white/[0.02] rounded-xl border border-white/[0.05] p-2 flex flex-col">
+                                      <span className="text-xs font-semibold text-gray-400 px-2 pt-2">Performance Delta</span>
+                                      <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart 
+                                          data={[
+                                            { name: 'Tech', Orig: report.technicalScore, Retake: session.technicalScore || 0 },
+                                            { name: 'Comm', Orig: report.communicationScore, Retake: session.communicationScore || 0 },
+                                            { name: 'Conf', Orig: report.confidenceScore, Retake: session.confidenceScore || 0 },
+                                            { name: 'Prob', Orig: report.problemSolvingScore, Retake: session.problemSolvingScore || 0 },
+                                          ]}
+                                          margin={{ top: 20, right: 10, left: -20, bottom: 0 }}
+                                        >
+                                          <XAxis dataKey="name" stroke="#9ca3af" tick={{ fill: '#9ca3af', fontSize: 10 }} />
+                                          <YAxis domain={[0, 100]} stroke="#9ca3af" tick={{ fill: '#9ca3af', fontSize: 10 }} />
+                                          <RechartsTooltip contentStyle={{ backgroundColor: '#111827', borderColor: 'rgba(255,255,255,0.1)', fontSize: '12px' }} />
+                                          <Bar dataKey="Orig" fill="#4b5563" radius={[4, 4, 0, 0]} barSize={12} />
+                                          <Bar dataKey="Retake" fill="#3B82F6" radius={[4, 4, 0, 0]} barSize={12} />
+                                        </BarChart>
+                                      </ResponsiveContainer>
+                                    </div>
+                                  </div>
+                                </div>
+                              </motion.div>
+                            </td>
+                          </tr>
+                        )}
+                      </AnimatePresence>
+                    </React.Fragment>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
     </motion.div>
   );
 };

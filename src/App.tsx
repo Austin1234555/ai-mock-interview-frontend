@@ -168,9 +168,14 @@ const ReportWrapper = () => {
   return (
     <FeedbackReportView
       role={state.role || 'Java Backend'}
-      onNavigate={(screen: AppScreen) => {
+      onNavigate={(screen: AppScreen, role?: InterviewRole) => {
         if (screen === 'dashboard') navigate('/dashboard');
         if (screen === 'analytics') navigate('/analytics');
+        if (screen === 'setup') navigate('/setup');
+        if (screen === 'session') navigate('/interview/session', { state: { role } });
+      }}
+      onRetake={(config) => {
+        navigate('/interview/loading', { state: { config, role: config.role } });
       }}
     />
   );

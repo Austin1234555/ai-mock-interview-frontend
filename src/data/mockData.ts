@@ -408,5 +408,43 @@ export const mockEvaluationReport: EvaluationReport = {
       userAnswer: 'For LCP, I ensure critical CSS is inlined and hero images use priority loading (`fetchpriority="high"`). To eliminate CLS regressions, all images and dynamic ads must have explicit width and height attributes or pre-allocated CSS aspect ratios. For INP, long Javascript tasks blocking the main thread need to be broken up using `scheduler.yield()` or React 18\'s `useTransition` to keep the UI responsive during heavy filtering operations.',
       isCodeAnswer: false
     }
+  ],
+  originalConfig: {
+    role: 'Frontend Architect',
+    level: 'Senior',
+    difficulty: 'Hard',
+    duration: '30 Minutes',
+    focusArea: 'Performance & Architecture',
+    questionCount: 3,
+    timePerQuestion: 180,
+    includeTechnicalCoding: true,
+  },
+  retakeHistory: [
+    {
+      id: 'ses-9982-retake-1',
+      role: 'Frontend Architect',
+      level: 'Senior',
+      difficulty: 'Hard',
+      date: 'Yesterday, 2026',
+      duration: '30 Minutes',
+      score: 85,
+      status: 'Completed',
+      accuracy: '85%',
+      technicalScore: 82,
+      communicationScore: 88,
+      confidenceScore: 85,
+      problemSolvingScore: 80
+    },
+    {
+      id: 'ses-9982-retake-2',
+      role: 'Frontend Architect',
+      level: 'Senior',
+      difficulty: 'Hard',
+      date: 'Today, 2026',
+      duration: '15 Minutes',
+      score: 0,
+      status: 'Paused',
+      accuracy: '0%',
+    }
   ]
 };
