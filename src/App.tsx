@@ -10,14 +10,19 @@ import { LandingView } from './components/views/LandingView';
 import { LoginView } from './components/views/LoginView';
 import { SignupView } from './components/views/SignupView';
 import { SetupView } from './components/views/SetupView';
+import { BehavioralSetupView } from './components/views/BehavioralSetupView';
+import { CodingSetupView } from './components/views/CodingSetupView';
+import { LoopSetupView } from './components/views/LoopSetupView';
 import { DashboardView } from './components/views/DashboardView';
 import { LoadingOrbView } from './components/views/LoadingOrbView';
 import { InterviewSessionView } from './components/views/InterviewSessionView';
+import { LoopTransitionView } from './components/views/LoopTransitionView';
+import { LoopReportView } from './components/views/LoopReportView';
 import { FeedbackReportView } from './components/views/FeedbackReportView';
 import { AnalyticsView } from './components/views/AnalyticsView';
 import { HistoryView } from './components/views/HistoryView';
 import { ProfileSettingsView } from './components/views/ProfileSettingsView';
-import type { InterviewRole, AppScreen } from './types';
+import type { InterviewRole, AppScreen, LoopState } from './types';
 
 // Wrapper for Auth views
 const LoginWrapper = () => {
@@ -102,6 +107,21 @@ const DashboardWrapper = () => {
           window.scrollTo({ top: 0, behavior: 'smooth' });
           return;
         }
+        if (screen === 'setup-behavioral') {
+          navigate('/setup-behavioral');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          return;
+        }
+        if (screen === 'setup-loop') {
+          navigate('/setup-loop');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          return;
+        }
+        if (screen === 'setup-coding') {
+          navigate('/setup-coding');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          return;
+        }
         const pathMap: Record<string, string> = {
           'analytics': '/analytics',
           'profile': '/profile',
@@ -153,8 +173,15 @@ const SessionWrapper = () => {
   return (
     <InterviewSessionView
       role={state.role || 'Java Backend'}
+      config={state.config}
       onCompleteSession={(role: InterviewRole) => {
-        navigate('/interview/report', { state: { role } });
+        if (state.loopState) {
+          const ls: LoopState = { ...state.loopState };
+          ls.currentRoundIndex += 1; // Mark current round as completed
+          navigate('/interview/loop-transition', { state: { loopState: ls } });
+        } else {
+          navigate('/interview/report', { state: { role } });
+        }
       }}
       onCancelSession={() => navigate('/dashboard')}
     />
@@ -187,6 +214,10 @@ const AnalyticsWrapper = () => {
     <AnalyticsView
       onNavigate={(screen: AppScreen) => {
         if (screen === 'dashboard') navigate('/dashboard');
+        if (screen === 'setup') navigate('/setup');
+        if (screen === 'setup-loop') navigate('/setup-loop');
+        if (screen === 'setup-behavioral') navigate('/setup-behavioral');
+        if (screen === 'setup-coding') navigate('/setup-coding');
       }}
     />
   );
@@ -229,6 +260,74 @@ const SetupWrapper = () => {
   );
 };
 
+const BehavioralSetupWrapper = () => {
+  const navigate = useNavigate();
+  return (
+    <BehavioralSetupView
+      onNavigateBack={() => navigate('/dashboard')}
+      onStartInterview={(config) => {
+        navigate('/interview/loading', { state: { config, role: config.role } });
+      }}
+    />
+  );
+};
+
+const CodingSetupWrapper = () => {
+  const navigate = useNavigate();
+  return (
+    <CodingSetupView
+      onNavigateBack={() => navigate('/dashboard')}
+      onStartInterview={(config) => {
+        navigate('/interview/loading', { state: { config, role: config.role } });
+      }}
+    />
+  );
+};
+
+const LoopSetupWrapper = () => {
+  const navigate = useNavigate();
+  return (
+    <LoopSetupView
+      onNavigateBack={() => navigate('/dashboard')}
+      onStartLoop={(loopState) => {
+        const firstConfig = loopState.rounds[0].config;
+        navigate('/interview/loading', { state: { config: firstConfig, role: firstConfig.role, loopState } });
+      }}
+    />
+  );
+};
+
+const LoopTransitionWrapper = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const state = (location.state as any) || {};
+  return (
+    <LoopTransitionView
+      loopState={state.loopState}
+      onNextRound={() => {
+        const ls: LoopState = state.loopState;
+        const nextConfig = ls.rounds[ls.currentRoundIndex].config;
+        navigate('/interview/loading', { state: { config: nextConfig, role: nextConfig.role, loopState: ls } });
+      }}
+      onViewReport={() => {
+        navigate('/interview/loop-report', { state: { loopState: state.loopState } });
+      }}
+    />
+  );
+};
+
+const LoopReportWrapper = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const state = (location.state as any) || {};
+  return (
+    <LoopReportView
+      loopState={state.loopState}
+      onNavigateBack={() => navigate('/dashboard')}
+    />
+  );
+};
+
 const AppRoutes = () => {
   const { user } = useAuth();
 
@@ -243,16 +342,21 @@ const AppRoutes = () => {
       <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
         <Route path="/dashboard" element={<DashboardWrapper />} />
         <Route path="/setup" element={<SetupWrapper />} />
+        <Route path="/setup-behavioral" element={<BehavioralSetupWrapper />} />
+        <Route path="/setup-coding" element={<CodingSetupWrapper />} />
+        <Route path="/setup-loop" element={<LoopSetupWrapper />} />
         <Route path="/analytics" element={<AnalyticsWrapper />} />
         <Route path="/history" element={<HistoryWrapper />} />
         <Route path="/profile" element={<ProfileWrapper />} />
         <Route path="/interview/report" element={<ReportWrapper />} />
+        <Route path="/interview/loop-report" element={<LoopReportWrapper />} />
       </Route>
 
       {/* Immersive Layout (Authenticated without Navigation) */}
       <Route element={<ProtectedRoute><ImmersiveLayout /></ProtectedRoute>}>
         <Route path="/interview/loading" element={<LoadingOrbWrapper />} />
         <Route path="/interview/session" element={<SessionWrapper />} />
+        <Route path="/interview/loop-transition" element={<LoopTransitionWrapper />} />
       </Route>
 
       {/* Fallback */}

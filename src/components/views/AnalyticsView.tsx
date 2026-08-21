@@ -1,5 +1,5 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   AreaChart, 
   Area, 
@@ -8,7 +8,7 @@ import {
   Tooltip as RechartsTooltip, 
   ResponsiveContainer
 } from 'recharts';
-import { TrendingUp, Award, Sparkles, Zap, ArrowLeft } from 'lucide-react';
+import { TrendingUp, Award, Sparkles, Zap, ArrowLeft, Activity, Briefcase, Users, Code2, Terminal, ChevronDown } from 'lucide-react';
 import { mockHistoricalScores, mockTopicMastery } from '../../data/mockData';
 import { cardVariants, containerVariants } from '../../utils/motion';
 import { sound } from '../../utils/sound';
@@ -19,6 +19,36 @@ interface AnalyticsViewProps {
 }
 
 export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ onNavigate }) => {
+  const [activeTab, setActiveTab] = useState<'Standard' | 'Loop' | 'Behavioral' | 'Coding'>('Standard');
+  const [isPracticeMenuOpen, setIsPracticeMenuOpen] = useState(false);
+
+  const historicalScores = useMemo(() => {
+    // Offset mock scores based on category to show different telemetry
+    const offset = activeTab === 'Standard' ? 0 : activeTab === 'Loop' ? -5 : activeTab === 'Behavioral' ? 8 : -3;
+    return mockHistoricalScores.map(score => ({
+      ...score,
+      score: Math.min(100, Math.max(0, score.score + offset)),
+      avg: Math.min(100, Math.max(0, score.avg + offset))
+    }));
+  }, [activeTab]);
+
+  const topicMastery = useMemo(() => {
+    let topics = [...mockTopicMastery];
+    if (activeTab === 'Behavioral') {
+      topics = topics.filter(t => t.topic.includes('Behavioral') || t.topic.includes('Leadership'));
+    } else if (activeTab === 'Coding') {
+      topics = topics.filter(t => t.topic.includes('Algorithms') || t.topic.includes('Data Structures'));
+    } else if (activeTab === 'Standard' || activeTab === 'Loop') {
+      topics = topics.filter(t => !t.topic.includes('Behavioral'));
+    }
+    
+    const offset = activeTab === 'Standard' ? 0 : activeTab === 'Loop' ? -2 : activeTab === 'Behavioral' ? 5 : -4;
+    return topics.map(t => ({
+      ...t,
+      mastery: Math.min(100, Math.max(0, t.mastery + offset))
+    }));
+  }, [activeTab]);
+
   return (
     <motion.div
       variants={containerVariants}
@@ -52,16 +82,80 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ onNavigate }) => {
           </p>
         </div>
 
-        <button
-          onClick={() => {
-            sound.playClick();
-            onNavigate('setup');
-          }}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold text-sm shadow-lg shadow-blue-500/20 hover:scale-105 transition-transform"
-        >
-          <Zap className="w-4 h-4 fill-current" />
-          <span>Launch Practice</span>
-        </button>
+        <div className="relative z-50">
+          <button
+            onClick={() => {
+              sound.playClick();
+              setIsPracticeMenuOpen(!isPracticeMenuOpen);
+            }}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold text-sm shadow-lg shadow-blue-500/20 hover:scale-105 transition-transform"
+          >
+            <Zap className="w-4 h-4 fill-current" />
+            <span>Launch Practice</span>
+            <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isPracticeMenuOpen ? 'rotate-180' : ''}`} />
+          </button>
+
+          <AnimatePresence>
+            {isPracticeMenuOpen && (
+              <motion.div 
+                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                transition={{ duration: 0.2 }}
+                className="absolute right-0 mt-3 w-56 rounded-2xl bg-[#111827]/95 border border-white/[0.12] shadow-2xl backdrop-blur-xl overflow-hidden py-1.5"
+              >
+                <button
+                  onClick={() => { sound.playClick(); onNavigate('setup'); }}
+                  className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:bg-white/[0.08] hover:text-white transition-colors flex items-center gap-3"
+                >
+                  <div className="p-1.5 rounded-lg bg-blue-500/20 text-blue-400"><Terminal className="w-4 h-4" /></div>
+                  <span className="font-medium">Standard Technical</span>
+                </button>
+                <button
+                  onClick={() => { sound.playClick(); onNavigate('setup-loop'); }}
+                  className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:bg-white/[0.08] hover:text-white transition-colors flex items-center gap-3"
+                >
+                  <div className="p-1.5 rounded-lg bg-green-500/20 text-green-400"><Briefcase className="w-4 h-4" /></div>
+                  <span className="font-medium">Full Onsite Loop</span>
+                </button>
+                <button
+                  onClick={() => { sound.playClick(); onNavigate('setup-behavioral'); }}
+                  className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:bg-white/[0.08] hover:text-white transition-colors flex items-center gap-3"
+                >
+                  <div className="p-1.5 rounded-lg bg-amber-500/20 text-amber-400"><Users className="w-4 h-4" /></div>
+                  <span className="font-medium">Behavioral Prep</span>
+                </button>
+                <button
+                  onClick={() => { sound.playClick(); onNavigate('setup-coding'); }}
+                  className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:bg-white/[0.08] hover:text-white transition-colors flex items-center gap-3"
+                >
+                  <div className="p-1.5 rounded-lg bg-cyan-500/20 text-cyan-400"><Code2 className="w-4 h-4" /></div>
+                  <span className="font-medium">Coding Interview</span>
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+
+      {/* Category Tabs */}
+      <div className="flex bg-[#111827]/80 rounded-xl p-1 border border-white/[0.08] backdrop-blur-xl shrink-0 overflow-x-auto max-w-full w-max mt-6">
+        {['Standard', 'Loop', 'Behavioral', 'Coding'].map((tab) => (
+          <button
+            key={tab}
+            onClick={() => {
+              sound.playClick();
+              setActiveTab(tab as any);
+            }}
+            className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${
+              activeTab === tab
+                ? 'bg-purple-500/20 text-purple-300 shadow-sm border border-purple-500/30'
+                : 'text-gray-400 hover:text-gray-200 hover:bg-white/[0.05] border border-transparent'
+            }`}
+          >
+            {tab === 'Standard' ? 'Technical' : tab} Analytics
+          </button>
+        ))}
       </div>
 
       {/* 1. TOP STATS OVERVIEW */}
@@ -69,7 +163,7 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ onNavigate }) => {
         <motion.div variants={cardVariants} className="p-6 rounded-[24px] bg-[#111827]/70 border border-white/[0.08] backdrop-blur-xl">
           <span className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Overall Trajectory</span>
           <div className="flex items-baseline gap-3 mt-2">
-            <span className="text-3xl font-extrabold text-green-400">+27%</span>
+            <span className="text-3xl font-extrabold text-green-400">{activeTab === 'Standard' ? '+27%' : activeTab === 'Behavioral' ? '+34%' : '+15%'}</span>
             <span className="text-xs text-gray-400">Since first session</span>
           </div>
           <p className="text-xs text-gray-500 mt-2">Consistent upward trend in technical accuracy and structural pacing.</p>
@@ -78,19 +172,19 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ onNavigate }) => {
         <motion.div variants={cardVariants} className="p-6 rounded-[24px] bg-[#111827]/70 border border-white/[0.08] backdrop-blur-xl">
           <span className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Top Competency</span>
           <div className="flex items-baseline gap-3 mt-2">
-            <span className="text-3xl font-extrabold text-blue-400">Behavioral</span>
-            <span className="text-xs text-green-400 font-bold">95% Mastery</span>
+            <span className="text-3xl font-extrabold text-blue-400">{activeTab === 'Coding' ? 'Algorithms' : 'Behavioral'}</span>
+            <span className="text-xs text-green-400 font-bold">{activeTab === 'Coding' ? '91%' : '95%'} Mastery</span>
           </div>
-          <p className="text-xs text-gray-500 mt-2">Exemplary use of STAR structure with quantifiable engineering metrics.</p>
+          <p className="text-xs text-gray-500 mt-2">Exemplary use of structure with quantifiable engineering metrics.</p>
         </motion.div>
 
         <motion.div variants={cardVariants} className="p-6 rounded-[24px] bg-[#111827]/70 border border-white/[0.08] backdrop-blur-xl">
           <span className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Focus Target</span>
           <div className="flex items-baseline gap-3 mt-2">
-            <span className="text-3xl font-extrabold text-purple-400">DevOps Tooling</span>
+            <span className="text-3xl font-extrabold text-purple-400">{activeTab === 'Coding' ? 'Dynamic Prog.' : 'DevOps Tooling'}</span>
             <span className="text-xs text-amber-400 font-bold">84% Mastery</span>
           </div>
-          <p className="text-xs text-gray-500 mt-2">Recommend practicing Kubernetes ingress and Kafka sharding questions next.</p>
+          <p className="text-xs text-gray-500 mt-2">Recommend practicing focus targets before your next interview loop.</p>
         </motion.div>
       </div>
 
@@ -105,13 +199,13 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ onNavigate }) => {
             <p className="text-xs text-gray-400">Comparing raw session scores against your rolling moving average</p>
           </div>
           <span className="px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 text-xs font-bold border border-blue-500/30">
-            Last 7 Sessions
+            Last {historicalScores.length} Sessions
           </span>
         </div>
 
         <div className="w-full h-[320px]">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={mockHistoricalScores} margin={{ top: 20, right: 20, left: -20, bottom: 20 }}>
+            <AreaChart data={historicalScores} margin={{ top: 20, right: 20, left: -20, bottom: 20 }}>
               <defs>
                 <linearGradient id="scoreColor" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.4} />
@@ -152,7 +246,7 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ onNavigate }) => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-          {mockTopicMastery.map((topic, idx) => (
+          {topicMastery.map((topic, idx) => (
             <div
               key={topic.topic}
               className="p-5 rounded-2xl bg-white/[0.03] border border-white/[0.05] space-y-3"

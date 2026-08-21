@@ -70,16 +70,18 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'Completed' | 'In Progress' | 'Needs Review'>('ALL');
   const [difficultyFilter, setDifficultyFilter] = useState<'ALL' | 'Easy' | 'Medium' | 'Hard'>('ALL');
+  const [activeTab, setActiveTab] = useState<'Standard' | 'Loop' | 'Behavioral' | 'Coding'>('Standard');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
   // Filter sessions
   const filteredSessions = mockRecentSessions.filter((session) => {
+    const matchesTab = session.interviewType === activeTab || (!session.interviewType && activeTab === 'Standard');
     const matchesSearch = session.role.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           session.level.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === 'ALL' || session.status === statusFilter;
     const matchesDifficulty = difficultyFilter === 'ALL' || session.difficulty === difficultyFilter;
-    return matchesSearch && matchesStatus && matchesDifficulty;
+    return matchesTab && matchesSearch && matchesStatus && matchesDifficulty;
   });
 
   const totalPages = Math.ceil(filteredSessions.length / itemsPerPage);
@@ -117,7 +119,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       icon: <Briefcase className="w-6 h-6 text-green-400" />,
       action: () => {
         sound.playClick();
-        onNavigate('setup', 'Full Stack');
+        onNavigate('setup-loop');
       },
       gradient: 'from-green-500/20 via-emerald-500/10 to-transparent',
       border: 'border-green-500/30'
@@ -129,7 +131,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       icon: <Users className="w-6 h-6 text-amber-400" />,
       action: () => {
         sound.playClick();
-        onNavigate('setup', 'Product Manager');
+        onNavigate('setup-behavioral');
       },
       gradient: 'from-amber-500/20 via-orange-500/10 to-transparent',
       border: 'border-amber-500/30'
@@ -141,7 +143,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       icon: <Code2 className="w-6 h-6 text-cyan-400" />,
       action: () => {
         sound.playClick();
-        onNavigate('setup', 'Python Backend');
+        onNavigate('setup-coding');
       },
       gradient: 'from-cyan-500/20 via-blue-500/10 to-transparent',
       border: 'border-cyan-500/30'
@@ -313,6 +315,26 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <span>Recent Interview Sessions</span>
             </h2>
             <p className="text-xs text-gray-400">Search, filter, and review your historical simulated interviews</p>
+          </div>
+
+          <div className="flex bg-[#111827]/80 rounded-xl p-1 border border-white/[0.08] backdrop-blur-xl shrink-0 overflow-x-auto max-w-full">
+            {['Standard', 'Loop', 'Behavioral', 'Coding'].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => {
+                  sound.playClick();
+                  setActiveTab(tab as any);
+                  setCurrentPage(1);
+                }}
+                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
+                  activeTab === tab
+                    ? 'bg-indigo-500/20 text-indigo-300 shadow-sm border border-indigo-500/30'
+                    : 'text-gray-400 hover:text-gray-200 hover:bg-white/[0.05] border border-transparent'
+                }`}
+              >
+                {tab === 'Standard' ? 'Technical' : tab}
+              </button>
+            ))}
           </div>
 
           {/* Search & Filter Controls */}

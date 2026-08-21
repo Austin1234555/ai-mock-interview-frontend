@@ -12,7 +12,9 @@ export type InterviewRole =
   | 'Product Manager'
   | 'AI / ML Researcher'
   | 'DevOps Engineer'
-  | 'System Designer';
+  | 'System Designer'
+  | 'Behavioral'
+  | (string & {});
 
 export type ExperienceLevel = 
   | 'Fresher' 
@@ -22,7 +24,9 @@ export type ExperienceLevel =
   | 'Junior' 
   | 'Mid-Level' 
   | 'Senior' 
-  | 'Staff / Principal';
+  | 'Staff / Principal'
+  | 'Manager'
+  | 'Director';
 
 export type InterviewDuration = '15 Minutes' | '30 Minutes' | '45 Minutes' | '60 Minutes';
 
@@ -51,6 +55,7 @@ export interface InterviewConfig {
   questionCount: number;
   timePerQuestion: number; // in seconds
   includeTechnicalCoding: boolean;
+  companyFocus?: string;
 }
 
 export interface MetricCardData {
@@ -66,6 +71,7 @@ export interface MetricCardData {
 
 export interface RecentSession {
   id: string;
+  interviewType?: 'Standard' | 'Loop' | 'Behavioral' | 'Coding';
   role: InterviewRole;
   level: ExperienceLevel;
   difficulty?: InterviewDifficulty;
@@ -91,6 +97,8 @@ export interface InterviewQuestion {
   aiHint?: string;
   modelAnswer?: string;
   isCodingQuestion?: boolean;
+  examples?: { input: string; output: string; explanation?: string }[];
+  constraints?: string[];
 }
 
 export interface QuestionFeedback {
@@ -140,14 +148,33 @@ export interface EvaluationReport {
   retakeHistory?: RecentSession[];
 }
 
+export interface LoopRound {
+  title: string;
+  config: InterviewConfig;
+  report?: EvaluationReport;
+}
+
+export interface LoopState {
+  company: string;
+  role: InterviewRole;
+  level: ExperienceLevel;
+  rounds: LoopRound[];
+  currentRoundIndex: number;
+}
+
 export type AppScreen = 
   | 'landing'
   | 'login'
   | 'signup'
   | 'dashboard' 
   | 'setup' 
+  | 'setup-behavioral'
+  | 'setup-coding'
+  | 'setup-loop'
   | 'loading-orb' 
   | 'session' 
+  | 'loop-transition'
+  | 'loop-report'
   | 'ai-thinking' 
   | 'report' 
   | 'analytics'

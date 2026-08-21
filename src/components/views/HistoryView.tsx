@@ -22,18 +22,20 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ onNavigate }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'Completed' | 'In Progress' | 'Needs Review'>('ALL');
   const [difficultyFilter, setDifficultyFilter] = useState<'ALL' | 'Easy' | 'Medium' | 'Hard'>('ALL');
+  const [activeTab, setActiveTab] = useState<'Standard' | 'Loop' | 'Behavioral' | 'Coding'>('Standard');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const filteredSessions = useMemo(() => {
     return mockRecentSessions.filter((session) => {
+      const matchesTab = session.interviewType === activeTab || (!session.interviewType && activeTab === 'Standard');
       const matchesSearch = session.role.toLowerCase().includes(searchQuery.toLowerCase()) || 
                             session.level.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesStatus = statusFilter === 'ALL' || session.status === statusFilter;
       const matchesDifficulty = difficultyFilter === 'ALL' || session.difficulty === difficultyFilter;
-      return matchesSearch && matchesStatus && matchesDifficulty;
+      return matchesTab && matchesSearch && matchesStatus && matchesDifficulty;
     });
-  }, [searchQuery, statusFilter, difficultyFilter]);
+  }, [searchQuery, statusFilter, difficultyFilter, activeTab]);
 
   const totalPages = Math.ceil(filteredSessions.length / itemsPerPage);
   const paginatedSessions = filteredSessions.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
@@ -72,6 +74,26 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ onNavigate }) => {
       </div>
 
       <div className="space-y-4">
+        <div className="flex bg-[#111827]/80 rounded-xl p-1 border border-white/[0.08] backdrop-blur-xl shrink-0 overflow-x-auto max-w-full w-max">
+          {['Standard', 'Loop', 'Behavioral', 'Coding'].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => {
+                sound.playClick();
+                setActiveTab(tab as any);
+                setCurrentPage(1);
+              }}
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
+                activeTab === tab
+                  ? 'bg-indigo-500/20 text-indigo-300 shadow-sm border border-indigo-500/30'
+                  : 'text-gray-400 hover:text-gray-200 hover:bg-white/[0.05] border border-transparent'
+              }`}
+            >
+              {tab === 'Standard' ? 'Technical' : tab}
+            </button>
+          ))}
+        </div>
+
         {/* Search & Filter Controls */}
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative">

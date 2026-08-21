@@ -26,21 +26,23 @@ import {
 import { getQuestionsForRole, generateImmediateFeedback } from '../../data/mockData';
 import { cardVariants, buttonVariants } from '../../utils/motion';
 import { sound } from '../../utils/sound';
-import type { InterviewRole, InterviewQuestion, QuestionFeedback } from '../../types';
+import type { InterviewRole, InterviewQuestion, QuestionFeedback, InterviewConfig } from '../../types';
 import { ConfirmationModal } from '../modals/ConfirmationModal';
 
 interface InterviewSessionViewProps {
   role: InterviewRole;
+  config?: InterviewConfig;
   onCompleteSession: (role: InterviewRole) => void;
   onCancelSession: () => void;
 }
 
 export const InterviewSessionView: React.FC<InterviewSessionViewProps> = ({
   role,
+  config,
   onCompleteSession,
   onCancelSession,
 }) => {
-  const questions: InterviewQuestion[] = getQuestionsForRole(role);
+  const questions: InterviewQuestion[] = getQuestionsForRole(role, config);
   const [currentQIndex, setCurrentQIndex] = useState(0);
   const [answerText, setAnswerText] = useState('');
   const [isRecording, setIsRecording] = useState(false);
@@ -257,11 +259,47 @@ export const InterviewSessionView: React.FC<InterviewSessionViewProps> = ({
               <span className="px-2.5 py-0.5 rounded-md bg-blue-500/20 text-blue-300 text-xs font-bold">
                 {currentQ.difficulty} Tier
               </span>
-              <span className="text-xs text-gray-400">FAANG System Architecture Rubric</span>
+              <span className="text-xs text-gray-400">
+                {currentQ.isCodingQuestion ? 'FAANG Live Coding Rubric' : 'FAANG System Architecture Rubric'}
+              </span>
             </div>
-            <h1 className="text-lg sm:text-2xl font-extrabold text-white tracking-tight leading-snug">
-              &quot;{currentQ.text}&quot;
-            </h1>
+            
+            {currentQ.isCodingQuestion ? (
+              <div className="space-y-4">
+                <div className="text-sm sm:text-base font-semibold text-gray-200 whitespace-pre-wrap leading-relaxed">
+                  {currentQ.text}
+                </div>
+                
+                {currentQ.examples && currentQ.examples.length > 0 && (
+                  <div className="space-y-3 mt-4">
+                    <h3 className="text-sm font-bold text-white">Examples:</h3>
+                    {currentQ.examples.map((ex, idx) => (
+                      <div key={idx} className="p-4 rounded-lg bg-[#0d1117] border border-white/[0.05] font-mono text-xs text-gray-300 space-y-2">
+                        <p><strong className="text-blue-400">Input:</strong> {ex.input}</p>
+                        <p><strong className="text-green-400">Output:</strong> {ex.output}</p>
+                        {ex.explanation && <p><strong className="text-gray-400">Explanation:</strong> {ex.explanation}</p>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {currentQ.constraints && currentQ.constraints.length > 0 && (
+                  <div className="space-y-2 mt-4">
+                    <h3 className="text-sm font-bold text-white">Constraints:</h3>
+                    <ul className="text-xs text-gray-400 space-y-1 font-mono">
+                      {currentQ.constraints.map((c, idx) => (
+                        <li key={idx} className="bg-[#0d1117] inline-block px-2 py-1 rounded-md mb-1 mr-2 border border-white/[0.05]">{c}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <h1 className="text-lg sm:text-2xl font-extrabold text-white tracking-tight leading-snug">
+                &quot;{currentQ.text}&quot;
+              </h1>
+            )}
+
             {currentQ.aiHint && (
               <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-xs text-blue-300 flex items-center gap-2">
                 <HelpCircle className="w-4 h-4 shrink-0" />

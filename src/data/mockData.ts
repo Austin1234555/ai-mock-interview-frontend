@@ -77,6 +77,7 @@ export const mockMetrics: MetricCardData[] = [
 export const mockRecentSessions: RecentSession[] = [
   {
     id: 'ses-101',
+    interviewType: 'Standard',
     role: 'Java Backend',
     level: '3–5 Years',
     difficulty: 'Hard',
@@ -88,19 +89,21 @@ export const mockRecentSessions: RecentSession[] = [
   },
   {
     id: 'ses-102',
-    role: 'Python Backend',
-    level: '5+ Years',
+    interviewType: 'Loop',
+    role: 'Full Stack Engineer',
+    level: 'Senior',
     difficulty: 'Hard',
     date: 'Yesterday',
-    duration: '60 Minutes',
+    duration: '180 Minutes',
     score: 91,
     status: 'Completed',
     accuracy: '92%'
   },
   {
     id: 'ses-103',
-    role: 'Frontend',
-    level: '3–5 Years',
+    interviewType: 'Behavioral',
+    role: 'Behavioral',
+    level: 'Manager',
     difficulty: 'Medium',
     date: '3 days ago',
     duration: '30 Minutes',
@@ -110,17 +113,19 @@ export const mockRecentSessions: RecentSession[] = [
   },
   {
     id: 'ses-104',
-    role: 'DevOps Engineer',
-    level: '1–2 Years',
+    interviewType: 'Coding',
+    role: 'Python Backend',
+    level: 'Mid-Level',
     difficulty: 'Medium',
     date: 'July 24',
-    duration: '30 Minutes',
+    duration: '45 Minutes',
     score: 84,
     status: 'Completed',
     accuracy: '85%'
   },
   {
     id: 'ses-105',
+    interviewType: 'Standard',
     role: 'Machine Learning',
     level: '5+ Years',
     difficulty: 'Hard',
@@ -132,6 +137,7 @@ export const mockRecentSessions: RecentSession[] = [
   },
   {
     id: 'ses-106',
+    interviewType: 'Coding',
     role: 'Flutter',
     level: 'Fresher',
     difficulty: 'Easy',
@@ -143,8 +149,9 @@ export const mockRecentSessions: RecentSession[] = [
   },
   {
     id: 'ses-107',
-    role: 'Android',
-    level: '1–2 Years',
+    interviewType: 'Behavioral',
+    role: 'Product Manager',
+    level: 'Senior',
     difficulty: 'Medium',
     date: 'July 15',
     duration: '30 Minutes',
@@ -154,11 +161,12 @@ export const mockRecentSessions: RecentSession[] = [
   },
   {
     id: 'ses-108',
-    role: 'Full Stack',
-    level: '3–5 Years',
+    interviewType: 'Loop',
+    role: 'Java Backend',
+    level: 'Senior',
     difficulty: 'Hard',
     date: 'July 12',
-    duration: '45 Minutes',
+    duration: '180 Minutes',
     score: 86,
     status: 'Completed',
     accuracy: '87%'
@@ -170,14 +178,25 @@ export const roleQuestionsMap: Record<string, InterviewQuestion[]> = {
     {
       id: 'jb-q1',
       number: 1,
-      text: 'Explain how the JVM Garbage Collector handles generational objects, specifically contrasting G1GC with ZGC in low-latency microservices.',
-      category: 'JVM Memory Management',
-      difficulty: 'Hard',
-      expectedKeyPoints: ['Young vs Old Generation heap regions', 'Evacuation pauses and concurrent marking', 'ZGC load barriers and colored pointers', 'Tail latency SLA trade-offs'],
+      text: 'You are given an array of integers `nums` and an integer `target`. Return the indices of the two numbers such that they add up to `target`.\n\nYou may assume that each input would have exactly one solution, and you may not use the same element twice. You can return the answer in any order.',
+      category: 'Data Structures & Algorithms',
+      difficulty: 'Medium',
+      expectedKeyPoints: ['Hash Map for O(n) time complexity', 'One-pass traversal checking for target - num', 'Edge cases with negative numbers or zero'],
       timeLimitSeconds: 180,
-      aiHint: 'Mention how ZGC avoids stop-the-world pauses during compaction using colored pointers.',
-      modelAnswer: 'In modern Java microservices, G1GC partitions the heap into equal regions and performs concurrent marking with incremental stop-the-world evacuation pauses. While effective for general workloads, G1GC can suffer from tail latency spikes under heavy allocation. Conversely, ZGC achieves sub-millisecond pauses by using colored pointers and load barriers, performing marking, relocation, and reference processing concurrently with application threads.',
-      isCodingQuestion: true
+      aiHint: 'Instead of nested loops (O(n^2)), use a HashMap to store values and their indices to achieve O(n) time.',
+      modelAnswer: 'We can iterate through the array once. As we iterate, we compute the complement (`target - current_element`). If the complement exists in our hash map, we return its index and the current index. Otherwise, we add the current element and its index to the hash map.',
+      isCodingQuestion: true,
+      examples: [
+        { input: 'nums = [2,7,11,15], target = 9', output: '[0,1]', explanation: 'Because nums[0] + nums[1] == 9, we return [0, 1].' },
+        { input: 'nums = [3,2,4], target = 6', output: '[1,2]' },
+        { input: 'nums = [3,3], target = 6', output: '[0,1]' }
+      ],
+      constraints: [
+        '2 <= nums.length <= 10^4',
+        '-10^9 <= nums[i] <= 10^9',
+        '-10^9 <= target <= 10^9',
+        'Only one valid answer exists.'
+      ]
     },
     {
       id: 'jb-q2',
@@ -278,7 +297,32 @@ export const defaultMockQuestions: InterviewQuestion[] = [
   }
 ];
 
-export const getQuestionsForRole = (role: string): InterviewQuestion[] => {
+export const genericCodingQuestion: InterviewQuestion = {
+  id: 'gen-code-1',
+  number: 1,
+  text: 'Given a string `s` containing just the characters `\'(\'`, `\')\'`, `\'{\'`, `\'}\'`, `\'[\'` and `\']\'`, determine if the input string is valid.\n\nAn input string is valid if:\n1. Open brackets must be closed by the same type of brackets.\n2. Open brackets must be closed in the correct order.\n3. Every close bracket has a corresponding open bracket of the same type.',
+  category: 'Live Coding & Algorithms',
+  difficulty: 'Medium',
+  expectedKeyPoints: ['Use a Stack data structure', 'O(n) time complexity traversal', 'Handle edge cases of odd-length strings'],
+  timeLimitSeconds: 1800,
+  aiHint: 'Use a Stack to keep track of the most recent open brackets.',
+  modelAnswer: 'We can use a Stack. We iterate over `s`. If we see an open bracket, we push it to the stack. If we see a close bracket, we check if the stack is empty or if the top of the stack does not match the corresponding open bracket. If either is true, it is invalid. At the end, the stack must be empty.',
+  isCodingQuestion: true,
+  examples: [
+    { input: 's = "()"', output: 'true' },
+    { input: 's = "()[]{}"', output: 'true' },
+    { input: 's = "(]"', output: 'false' }
+  ],
+  constraints: [
+    '1 <= s.length <= 10^4',
+    's consists of parentheses only \'()[]{}\'.'
+  ]
+};
+
+export const getQuestionsForRole = (role: string, config?: any): InterviewQuestion[] => {
+  if (config?.includeTechnicalCoding) {
+    return [genericCodingQuestion];
+  }
   return roleQuestionsMap[role] || defaultMockQuestions;
 };
 
